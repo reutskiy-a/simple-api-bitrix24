@@ -2,7 +2,7 @@
     "name": "reutskiy-a/simple-api-bitrix24",
     "description": "Simple REST API Bitrix24 client: OAuth 2.0, Webhook, flexible DB support, app installer.",
     "type": "library",
-    "keywords": ["bitrix24", "rest", "api", "simple", "php", "sdk"],
+    "keywords": ["bitrix24", "rest", "api", "simple", "php", "sdk", "b24", "bitrix"],
     "minimum-stability": "stable",
     "license": "MIT",
     "authors": [
