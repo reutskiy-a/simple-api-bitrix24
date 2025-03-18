@@ -1,8 +1,8 @@
 
-Simple REST API Bitrix24 client: OAuth 2.0, Webhook, flexible DB support, app installer.
+### Simple REST API Bitrix24 client: OAuth 2.0, Webhook, flexible DB support, app installer.
 
-OAuth 2.0, Webhook, поддержка всех популярных реляционных БД, менеджер установки локальных/тиражных приложений
- ---
+## Клиент для REST API Bitrix24:
+## OAuth 2.0, Webhook, поддержка всех популярных реляционных БД, менеджер установки локальных/тиражных приложений
 
 ## Install
 ```bash
@@ -142,6 +142,7 @@ composer require reutskiy-a/simple-api-bitrix24
 ### 2.3 Установка приложения
 
 ```php
+    use SimpleApiBitrix24\Services\Installation\InstallationService
     
     // старт установки (добавление пользователя в базу данных)
     $installationService = new InstallationService();
@@ -378,6 +379,7 @@ To dynamically set the connection based on $_REQUEST['member_id'], do this:
 ### 2.3 App Installation
 
 ```php
+    use SimpleApiBitrix24\Services\Installation\InstallationService
     
     // Start installation (add user to the database)
     $installationService = new InstallationService();
@@ -488,7 +490,7 @@ Up to 50 requests can be included in a single batch request.
 ```php
     use SimpleApiBitrix24\Services\Batch;
     
-    $batchService = new Batch($api);                   // передаём объект SimpleApiBitrix24\ApiClientBitrix24
+    $batchService = new Batch($api);                   // SimpleApiBitrix24\ApiClientBitrix24 object
     $tasks = $batchService->getAll('tasks.task.list', ['filter' => ['STATUS' => 5]]);
 ```
 
