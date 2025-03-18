@@ -142,7 +142,7 @@ composer require reutskiy-a/simple-api-bitrix24
 ### 2.3 Установка приложения
 
 ```php
-    use SimpleApiBitrix24\Services\Installation\InstallationService
+    use SimpleApiBitrix24\Services\Installation\InstallationService;
     
     // старт установки (добавление пользователя в базу данных)
     $installationService = new InstallationService();
@@ -379,7 +379,7 @@ To dynamically set the connection based on $_REQUEST['member_id'], do this:
 ### 2.3 App Installation
 
 ```php
-    use SimpleApiBitrix24\Services\Installation\InstallationService
+    use SimpleApiBitrix24\Services\Installation\InstallationService;
     
     // Start installation (add user to the database)
     $installationService = new InstallationService();
