@@ -95,25 +95,4 @@ trait AppConfigurationTrait
             clientSecretColumnName: DatabaseConstants::CLIENT_SECRET_COLUMN_NAME
         );
     }
-
-    public function getApiDatabaseConfigWithRealPDO()
-    {
-//        $pdo = new PDO('sqlite:' . self::DATABASE_PATH);
-//        return new ApiDatabaseConfig(
-//            pdo: $pdo,
-//            tableName: DatabaseConstants::TABLE_NAME,
-//            primaryKeyColumnName: DatabaseConstants::PRIMARY_KEY_COLUMN_NAME,
-//            memberIdColumnName: DatabaseConstants::MEMBER_ID_COLUMN_NAME,
-//            accessTokenColumnName: DatabaseConstants::ACCESS_TOKEN_COLUMN_NAME,
-//            expiresInColumnName: DatabaseConstants::EXPIRES_IN_COLUMN_NAME,
-//            applicationTokenColumnName: DatabaseConstants::APPLICATION_TOKEN_COLUMN_NAME,
-//            refreshTokenColumnName: DatabaseConstants::REFRESH_TOKEN_COLUMN_NAME,
-//            domainColumnName: DatabaseConstants::DOMAIN_COLUMN_NAME,
-//            clientEndpointColumnName: DatabaseConstants::CLIENT_END_POINT_COLUMN_NAME,
-//            clientIdColumnName: DatabaseConstants::CLIENT_ID_COLUMN_NAME,
-//            clientSecretColumnName: DatabaseConstants::CLIENT_SECRET_COLUMN_NAME
-//        );
-    }
-
-
 }
