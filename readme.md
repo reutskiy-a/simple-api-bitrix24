@@ -1,10 +1,12 @@
+![Unit Tested](https://img.shields.io/badge/Unit%20Tests-Passing-brightgreen)
+![License](https://img.shields.io/github/license/reutskiy-a/simple-api-bitrix24)
 
 ### Simple REST API Bitrix24 client: OAuth 2.0, Webhook, flexible DB support, app installer.
 
 ## Клиент для REST API Bitrix24:
-## OAuth 2.0, Webhook, поддержка всех популярных реляционных БД, менеджер установки локальных/тиражных приложений. Установка одного локального приложения на несколько порталов.
+## OAuth 2.0 (с автообновлением токенов), Webhook, поддержка всех популярных реляционных БД, менеджер установки локальных/тиражных приложений. Установка одного локального приложения на несколько порталов.
 
-## Install
+## Installation
 ```bash
 composer require reutskiy-a/simple-api-bitrix24
 ```
@@ -74,7 +76,7 @@ composer require reutskiy-a/simple-api-bitrix24
 - SQLite
 - SQLServer
 
-**Создайте таблицу в базе данных. Пример запроса для mysql:**
+**Создайте таблицу в базе данных. Пример запроса для MySQL:**
 ```sql
     CREATE TABLE api_tokens_bitrix24(
     id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
@@ -246,7 +248,7 @@ composer require reutskiy-a/simple-api-bitrix24
 
 ### 5.2 Сервис списочных методов для получения всех элементов
 
-> **SimpleApiBitrix24\Services\Batch::getAll() работает только с методами списочного типа. Возвращает все элементы указанной сущости.**
+SimpleApiBitrix24\Services\Batch::getAll() работает только с методами списочного типа. Возвращает все элементы указанной сущости.
 ```php
     use SimpleApiBitrix24\Services\Batch;
     
@@ -256,6 +258,9 @@ composer require reutskiy-a/simple-api-bitrix24
 
 ---
 # English
+
+### Client for Bitrix24 REST API:
+### OAuth 2.0 (with automatic token refresh), Webhook, support for all popular relational databases, manager for installing local/distributed applications. Installation of a single local application across multiple portals.
 
 ## Table of Contents:
 1. [Quick Start: Webhook Connection](#1-quick-start-webhook-connection)
@@ -298,14 +303,14 @@ composer require reutskiy-a/simple-api-bitrix24
 ```
 
 ## 2. OAuth 2.0 Connection (Local or Edition App
-> **You can install the same local app on different portals.
+> You can install the same local app on different portals.
 > Ensure client_id and client_secret are correct during installation,
-> otherwise tokens won’t refresh when they expire, and the app will throw an exception.**
+> otherwise tokens won’t refresh when they expire, and the app will throw an exception.
 
 
 
 ### 2.1 Preparing the Database for Token Storage
-> **Use any database of your choice:**
+Use any database of your choice:
 - PostgreSQL
 - MySQL
 - SQLite
@@ -486,7 +491,7 @@ Up to 50 requests can be included in a single batch request.
 
 ### 5.2 Service for List Methods to Retrieve All Items
 
-> **SimpleApiBitrix24\Services\Batch::getAll() works only with list-type methods and retrieves all items of the specified entity.**
+SimpleApiBitrix24\Services\Batch::getAll() works only with list-type methods and retrieves all items of the specified entity.
 ```php
     use SimpleApiBitrix24\Services\Batch;
     
