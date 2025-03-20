@@ -1,4 +1,5 @@
 ![Unit Tested](https://img.shields.io/badge/Unit%20Tests-Passing-brightgreen)
+![Integration Tests](https://img.shields.io/badge/Integration%20Tests-Passing-brightgreen)
 ![License](https://img.shields.io/github/license/reutskiy-a/simple-api-bitrix24)
 
 ### Simple REST API Bitrix24 client: OAuth 2.0, Webhook, flexible DB support, app installer.
@@ -252,7 +253,7 @@ SimpleApiBitrix24\Services\Batch::getAll() работает только с ме
 ```php
     use SimpleApiBitrix24\Services\Batch;
     
-    $batchService = new Batch($api);                   // передаём объект SimpleApiBitrix24\ApiClientBitrix24
+    $batchService = new Batch($api);                   // $api объект SimpleApiBitrix24\ApiClientBitrix24
     $tasks = $batchService->getAll('tasks.task.list', ['filter' => ['STATUS' => 5]]);
 ```
 
@@ -495,7 +496,7 @@ SimpleApiBitrix24\Services\Batch::getAll() works only with list-type methods and
 ```php
     use SimpleApiBitrix24\Services\Batch;
     
-    $batchService = new Batch($api);                   // SimpleApiBitrix24\ApiClientBitrix24 object
+    $batchService = new Batch($api);                   // $api is an instance of SimpleApiBitrix24\ApiClientBitrix24
     $tasks = $batchService->getAll('tasks.task.list', ['filter' => ['STATUS' => 5]]);
 ```
 
