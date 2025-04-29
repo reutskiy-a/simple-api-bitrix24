@@ -22,6 +22,7 @@ trait ConnectorTrait
     {
         return $this->httpClient->post($url, [
             'http_errors' => false,
+            'verify' => false,
             'headers' => [
                 'Content-type' => 'application/json',
                 'Accept' => 'application/json',
