@@ -209,6 +209,7 @@ composer require reutskiy-a/simple-api-bitrix24
         'Y-m-d H:i:s',
         true
     );
+    $formatter->setJsonPrettyPrint(true);
     $handler->setFormatter($formatter);
     $logger->pushHandler($handler);
 
@@ -451,6 +452,7 @@ At the DEBUG logging level, all requests and responses will be logged.
         'Y-m-d H:i:s',
         true
     );
+    $formatter->setJsonPrettyPrint(true);
     $handler->setFormatter($formatter);
     $logger->pushHandler($handler);
 
