@@ -73,11 +73,13 @@ class LogManager
     public function warning(
         string|\Stringable $message,
         array $context = [],
-        Throwable $exception = new ApiClientBitrix24Exception()
+        ?Throwable $exception = null
     ): void {
         if ($this->isItOff()) {
             return;
         }
+
+        $exception = $exception ?? new ApiClientBitrix24Exception();
 
         $this->logger->warning($message, [
             'data' => $context,
@@ -88,12 +90,14 @@ class LogManager
     public function error(
         string|\Stringable $message,
         array $context = [],
-        Throwable $exception = new ApiClientBitrix24Exception()
+        ?Throwable $exception = null
     ): void {
         if ($this->isItOff()) {
             return;
         }
 
+        $exception = $exception ?? new ApiClientBitrix24Exception();
+        
         $this->logger->error($message, [
             'data' => $context,
             'trace' => $exception->getTraceAsString()
