@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace SimpleApiBitrix24\Tests\Environment\Traits;
 
 use GuzzleHttp\Client;
+use GuzzleHttp\Handler\MockHandler;
+use GuzzleHttp\HandlerStack;
 use GuzzleHttp\Psr7\Response;
 use PDO;
 use PDOStatement;
@@ -14,6 +16,18 @@ use SimpleApiBitrix24\Constants\DatabaseConstants;
 
 trait AppConfigurationTrait
 {
+    private const ERROR_OPERATION_TIME_LIMIT = [
+        'error' => 'OPERATION_TIME_LIMIT',
+        'error_description' => 'Method is blocked due to operation time limit.'
+    ];
+
+    private const ERROR_QUERY_LIMIT_EXCEEDED = [
+        'error' => 'QUERY_LIMIT_EXCEEDED',
+        'error_description' => 'Too many requests'
+    ];
+
+    private const ERROR_EMPTY_RESPONSE = [];
+
     private function getHttpClientMock(array $response, string|int $httpStatus = 200): Client
     {
         $client = $this->createMock(Client::class);
@@ -23,14 +37,60 @@ trait AppConfigurationTrait
         return $client;
     }
 
+    private function getGuzzleHttpClientMock(array $response, string|int $httpStatus = 200): Client
+    {
+        $mock = new MockHandler([
+            new Response($httpStatus, ['Content-Type' => 'application/json'], json_encode($response))
+        ]);
+
+        $handlerStack = HandlerStack::create($mock);
+        return new Client(['handler' => $handlerStack]);
+    }
+
+    private function getGuzzleHttpClientMockQueue(array $queue): Client
+    {
+        $mock = new MockHandler($queue);
+
+        $handlerStack = HandlerStack::create($mock);
+        return new Client(['handler' => $handlerStack]);
+    }
+
     private function getApiSettingsMockForWebhook(string $webhook = ''): ApiClientSettings
     {
-        return (new ApiClientSettings())->setWebhookAuthEnabled(true)->setDefaultConnection($webhook);
+        $apiClientSettings = new ApiClientSettings();
+        $apiClientSettings
+            ->setWebhookAuthEnabled(true)
+            ->setDefaultConnection($webhook);
+
+        return $apiClientSettings;
+    }
+
+    private function getApiSettingsMockForWebhookWithServices(string $webhook = ''): ApiClientSettings
+    {
+        $apiClientSettings = new ApiClientSettings();
+        $apiClientSettings
+            ->setWebhookAuthEnabled(true)
+            ->setDefaultConnection($webhook)
+            ->setQueryLimitExceededService(handleEnabled: true)
+            ->setOperationTimeLimitService(handleEnabled: true);
+
+        return $apiClientSettings;
     }
 
     private function getApiSettingsMockForToken(): ApiClientSettings
     {
         return (new ApiClientSettings())->setTokenAuthEnabled(true);
+    }
+
+    private function getApiSettingsMockForTokenWithServices(): ApiClientSettings
+    {
+        $apiClientSettings = new ApiClientSettings();
+        $apiClientSettings
+            ->setTokenAuthEnabled(true)
+            ->setQueryLimitExceededService(handleEnabled: true)
+            ->setOperationTimeLimitService(handleEnabled: true);
+
+        return $apiClientSettings;
     }
 
     private function getApiDatabaseConfigMockWithoutUserData(): ApiDatabaseConfig

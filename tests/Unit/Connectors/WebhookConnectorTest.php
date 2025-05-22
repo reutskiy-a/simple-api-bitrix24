@@ -64,4 +64,5 @@ class WebhookConnectorTest extends TestCase
 
         $this->assertIsArray($response);
     }
+
 }
