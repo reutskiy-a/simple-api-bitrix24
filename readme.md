@@ -2,21 +2,21 @@
 ![Integration Tests](https://img.shields.io/badge/Integration%20Tests-Passing-brightgreen)
 ![License](https://img.shields.io/github/license/reutskiy-a/simple-api-bitrix24)
 
-### Simple REST API Bitrix24 client: OAuth 2.0, Webhook, flexible DB support, app installer, REST API Limit Handling Service
+> Simple REST API Bitrix24 client: OAuth 2.0, Webhook, flexible DB support, app installer, REST API Limit Handling Service
 
 ## Клиент для REST API Bitrix24:
-## OAuth 2.0 (с автообновлением токенов), Webhook, поддержка всех популярных реляционных БД, менеджер установки локальных/тиражных приложений. Установка одного локального приложения на несколько порталов.
-## Встроенная обработка лимитов REST API
+### OAuth 2.0 (с автообновлением токенов), Webhook, поддержка всех популярных реляционных БД, менеджер установки локальных/тиражных приложений. Установка одного локального приложения на несколько порталов.
+### Встроенная обработка лимитов REST API
 
 ## Installation
 ```bash
 composer require reutskiy-a/simple-api-bitrix24
 ```
 
-## LANGUAGE:
->**[Русский](#русский)**
+### LANGUAGE:
+> [Русский](#русский)
 > 
->**[English](#english)**
+> [English](#english)
 ---
 
 > Local/distributed app installation example
@@ -71,20 +71,20 @@ composer require reutskiy-a/simple-api-bitrix24
 
 
 ## 2. Соединение OAuth 2.0 (Локальное или Тиражное приложение)
-> **Вы можете устанавливать одно и тоже локальное приложение на разные порталы. 
+> Вы можете устанавливать одно и тоже локальное приложение на разные порталы. 
 > Только следите за корректностью client_id и client_secret при установке, 
-> иначе токены не обновятся, когда их время жизни закончится, и приложение выбросит исключение.**
+> иначе токены не обновятся, когда их время жизни закончится, и приложение выбросит исключение.
 
 
 
 ### 2.1 Подготовка базы данных для хранения токенов
-> **Используйте любую удобную базу данных:** 
+> Используйте любую удобную базу данных:
 - PostgreSQL
 - MySQL
 - SQLite
 - SQLServer
 
-**Создайте таблицу в базе данных. Пример запроса для MySQL:**
+Создайте таблицу в базе данных. Пример запроса для MySQL:
 ```sql
     CREATE TABLE api_tokens_bitrix24(
     id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
@@ -298,7 +298,7 @@ $apiSettings->setTokenAuthEnabled(true)
 По умолчанию обработка этих ошибок отключена, при включении укажите время ожидания в микросекундах.
 При получении ответа с одной из этих ошибок API Client будет делать повторный запрос через заданный интервал времени,
 не останавливая работу скрипта, делать это будет постоянно пока не завершится выполнение скрипта или 
-не закончится время жизни приложения.ph
+не закончится время жизни приложения.
 
 ---
 # English
@@ -361,7 +361,7 @@ Use any database of your choice:
 - SQLite
 - SQLServer
 
-**Create a table in the database. Example query for MySQL:**
+Create a table in the database. Example query for MySQL:
 ```sql
     CREATE TABLE api_tokens_bitrix24(
     id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
