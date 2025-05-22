@@ -32,7 +32,10 @@ class ApiClientBitrix24
     /**
      * @throws Throwable
      *
-     * @example $api->call('crm.deal.get', ['id' => 2]);
+     * @example
+     * ```php
+     * $api->call('crm.deal.get', ['id' => 2]);
+     * ```
      */
     public function call(string $method, array $params = []): array
     {
@@ -50,10 +53,12 @@ class ApiClientBitrix24
      * @throws Throwable
      *
      * @example
+     * ```php
      * $api->callBatch([
      *     ['method' => 'scope', 'params' => []],
      *     ['method' => 'crm.deal.get', 'params' => ['id' => 2]]
      * ]);
+     * ```
      */
     public function callBatch(array $queries): array
     {
@@ -69,8 +74,11 @@ class ApiClientBitrix24
 
     /**
      * Use this method to change the connection to the Bitrix24 API.
-     * Alternatively, use it when you need a second ApiClient instance, e.g.: $secondApi = cloned $firstApi; $secondApi->ConnectTo('memberId');
-     *
+     * Alternatively, use it when you need a second ApiClient instance, e.g.: 
+     * ```php
+     * $secondApi = cloned $firstApi; $secondApi->ConnectTo('memberId');
+     * ```
+     * 
      * @param string $webhookOrMemberId Webhook url or member id for connection
      * @return void
      * @throws ConnectorException
