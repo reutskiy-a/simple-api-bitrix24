@@ -6,6 +6,7 @@ namespace SimpleApiBitrix24\Connectors\Services;
 
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\GuzzleException;
+use SimpleApiBitrix24\Constants\AppConstants;
 use SimpleApiBitrix24\DatabaseCore\Models\User;
 use SimpleApiBitrix24\DatabaseCore\UserRepository;
 use SimpleApiBitrix24\Exceptions\RefreshTokenException;
@@ -49,13 +50,17 @@ class RefreshTokenService
 
         $response = $this->httpClient->post(self::TOKEN_REFRESH_URL, [
             'http_errors' => false,
+            'verify' => false,
             'headers' => [
-                'Accept' => 'application/json'
+                'Content-Type' => 'application/x-www-form-urlencoded',
+                'Accept' => 'application/json',
+                'User-Agent' => AppConstants::APP_INFO
             ],
             'form_params' => $data
         ]);
 
         $response = json_decode($response->getBody()->getContents(), true);
+
         $this->handleResponseErrors($response);
 
         return $this->updateUserTokens($user, $response);
