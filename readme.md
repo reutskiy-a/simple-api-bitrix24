@@ -2,10 +2,11 @@
 ![Integration Tests](https://img.shields.io/badge/Integration%20Tests-Passing-brightgreen)
 ![License](https://img.shields.io/github/license/reutskiy-a/simple-api-bitrix24)
 
-### Simple REST API Bitrix24 client: OAuth 2.0, Webhook, flexible DB support, app installer.
+### Simple REST API Bitrix24 client: OAuth 2.0, Webhook, flexible DB support, app installer, REST API Limit Handling Service
 
 ## Клиент для REST API Bitrix24:
 ## OAuth 2.0 (с автообновлением токенов), Webhook, поддержка всех популярных реляционных БД, менеджер установки локальных/тиражных приложений. Установка одного локального приложения на несколько порталов.
+## Встроенная обработка лимитов REST API
 
 ## Installation
 ```bash
@@ -49,6 +50,8 @@ composer require reutskiy-a/simple-api-bitrix24
 
     5.2 [Сервис списочных методов для получения всех элементов](#52-сервис-списочных-методов-для-получения-всех-элементов)
 
+6. [Встроенный сервис обработки лимитов REST API](#6-встроенный-сервис-обработки-лимитов-rest-api)
+    
 
 
 ## 1. Быстрый старт Webhook соединение
@@ -184,9 +187,6 @@ composer require reutskiy-a/simple-api-bitrix24
 
 
 ## 4. Логирование
-> **Используйте любой пакет для логирования реализующий PSR-3: Logger Interface.**
-> 
-> **В примере будет пакет monolog/monolog.**
 
 ### 4.1 Debug логирование
 При уровне логирования DEBUG, будут логироваться все запросы и ответы.
@@ -236,9 +236,11 @@ composer require reutskiy-a/simple-api-bitrix24
 
 ### 5.1 Стандартный пакетный запрос
 
-> **Про все ограничения запросов в официальной документации https://apidocs.bitrix24.ru/limits.html**
+> В один пакетный запрос можно завернуть до 50 запросов.
+> 
+> https://apidocs.bitrix24.ru/api-reference/how-to-call-rest-api/batch.html
 
-В один пакетный запрос можно завернуть до 50 запросов.
+
 ```php
     $result = $api->callBatch([
         [
@@ -261,6 +263,42 @@ SimpleApiBitrix24\Services\Batch::getAll() работает только с ме
     $batchService = new Batch($api);                   // $api объект SimpleApiBitrix24\ApiClientBitrix24
     $tasks = $batchService->getAll('tasks.task.list', ['filter' => ['STATUS' => 5]]);
 ```
+
+### 6. Встроенный сервис обработки лимитов REST API
+> Подробней о лимитах rest api смотрите в официальной документации
+> 
+> https://apidocs.bitrix24.ru/limits.html
+
+Этот пакет может обрабатывать ответы об ошибках лимитов REST API:
+
+Пример обрабатываемых ошибок от сервера REST API:
+```json
+{
+    "error": "QUERY_LIMIT_EXCEEDED",
+    "error_description": "Too many requests"
+}
+```
+```json
+{
+  "error": "OPERATION_TIME_LIMIT",
+  "error_description": "Method is blocked due to operation time limit."
+}
+```
+
+Включается обработка ошибок конфигурацией объекта SimpleApiBitrix24\ApiClientSettings
+```php
+use SimpleApiBitrix24\ApiClientSettings;
+
+$apiSettings = new ApiClientSettings();
+$apiSettings->setTokenAuthEnabled(true)
+            ->setDefaultConnection('your_member_id')
+            ->setQueryLimitExceededService(handleEnabled: true, usleep: 500000)
+            ->setOperationTimeLimitService(handleEnabled: true, usleep: 5000000);
+```
+По умолчанию обработка этих ошибок отключена, при включении укажите время ожидания в микросекундах.
+При получении ответа с одной из этих ошибок API Client будет делать повторный запрос через заданный интервал времени,
+не останавливая работу скрипта, делать это будет постоянно пока не завершится выполнение скрипта или 
+не закончится время жизни приложения.ph
 
 ---
 # English
@@ -293,6 +331,7 @@ SimpleApiBitrix24\Services\Batch::getAll() работает только с ме
 
    5.2 [Service for List Methods to Retrieve All Items](#52-service-for-list-methods-to-retrieve-all-items)
 
+6. [Built-in REST API Limit Handling Service](#6-built-in-rest-api-limit-handling-service)
 
 ## 1. Quick Start: Webhook Connection
 ```php
@@ -427,9 +466,6 @@ Cloning the connection object to work with multiple Bitrix24 portals simultaneou
 
 
 ## 4. Logging
-> **Use any PSR-3 Logger Interface compatible logging package.**
->
-> **The example below uses monolog/monolog.**
 
 ### 4.1 Debug Logging
 At the DEBUG logging level, all requests and responses will be logged.
@@ -480,9 +516,11 @@ Only Bitrix24 server error responses or exceptions from this SimpleApiBitrix24 p
 
 ### 5.1 Standard Batch Request
 
-> **See all request limits in the official documentation: https://apidocs.bitrix24.com/limits.html**
+> Up to 50 requests can be included in a single batch request.
+> 
+> https://apidocs.bitrix24.com/api-reference/how-to-call-rest-api/batch.html
 
-Up to 50 requests can be included in a single batch request.
+
 ```php
     $result = $api->callBatch([
         [
@@ -506,3 +544,38 @@ SimpleApiBitrix24\Services\Batch::getAll() works only with list-type methods and
     $tasks = $batchService->getAll('tasks.task.list', ['filter' => ['STATUS' => 5]]);
 ```
 
+### 6. Built-in REST API Limit Handling Service
+> For more details on REST API limits, refer to the official documentation:
+>
+> https://apidocs.bitrix24.com/limits.html
+
+This package can handle REST API limit error responses:
+
+Examples of handled REST API server errors:
+```json
+{
+    "error": "QUERY_LIMIT_EXCEEDED",
+    "error_description": "Too many requests"
+}
+```
+```json
+{
+    "error": "OPERATION_TIME_LIMIT",
+    "error_description": "Method is blocked due to operation time limit."
+}
+```
+Error handling is enabled through the configuration of the SimpleApiBitrix24\ApiClientSettings object:
+
+```php
+use SimpleApiBitrix24\ApiClientSettings;
+
+$apiSettings = new ApiClientSettings();
+$apiSettings->setTokenAuthEnabled(true)
+            ->setDefaultConnection('your_member_id')
+            ->setQueryLimitExceededService(handleEnabled: true, usleep: 500000)
+            ->setOperationTimeLimitService(handleEnabled: true, usleep: 5000000);
+```
+By default, handling of these errors is disabled. When enabled, specify the wait time in microseconds.
+Upon receiving one of these error responses, the API client will retry the request after the specified time interval
+without stopping the script's execution. It will continue doing so until the script completes or
+the application's lifetime expires.
