@@ -25,7 +25,7 @@ class Batch
      * Retrieves all items of a specific entity using a list-type method.
      * Works only with list-type methods (e.g., tasks.task.list).
      *
-     * Usage example:
+     * @example
      * ```php
      * $batchService = new Batch($apiClient);
      * $tasks = $batchService->getAll('tasks.task.list', ['filter' => ['STATUS' => 5]]);
@@ -72,6 +72,42 @@ class Batch
         $result = [];
         foreach($merge as $key => $value) {
             $result = array_merge($result, is_string(array_key_first($value)) ? reset($value) : $value);
+        }
+
+        return $result;
+    }
+
+    /**
+     * The limit is 50 queries per call
+     *
+     * @param array $queries
+     * @return array
+     * @throws \Throwable
+     * @example
+     * ```php
+     * $batchService->callWithKeys([
+     *      'scope_response' => ['method' => 'scope', 'params' => []],
+     *      'deal_list_response' => ['method' => 'crm.deal.list', 'params' => ['select' => ['ID', 'TITLE']]],
+     * ]);
+     * ```
+     */
+    public function callWithKeys(array $queries): array
+    {
+        $response = $this->api->callBatch($queries);
+        $result = [];
+
+        if (!isset($response['result'])) {
+            return $result;
+        }
+
+        foreach ($queries as $key => $query) {
+            $index = array_search($key, array_keys($queries));
+
+            if (isset($response['result']['result'][$index])) {
+                $result[$key] = $response['result']['result'][$index];
+            } elseif (isset($response['result']['result_error'][$index])) {
+                $result[$key] = $response['result']['result_error'][$index];
+            }
         }
 
         return $result;
