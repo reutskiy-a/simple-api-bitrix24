@@ -15,10 +15,10 @@ class ErrorResponseManager
     private const ERROR_EXPIRED_TOKEN = 'expired_token';
 
     public function __construct(
-        public readonly EmptyResponseService $emptyResponseService,
-        public readonly OperationTimeLimitService $operationTimeLimitService,
-        public readonly QueryLimitExceededService $queryLimitExceededService,
-        public readonly ?RefreshTokenService $refreshTokenService = null,
+        private EmptyResponseService $emptyResponseService,
+        private OperationTimeLimitService $operationTimeLimitService,
+        private QueryLimitExceededService $queryLimitExceededService,
+        private ?RefreshTokenService $refreshTokenService = null,
     ) {
 
     }
