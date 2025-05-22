@@ -4,14 +4,15 @@ declare(strict_types=1);
 
 namespace SimpleApiBitrix24\Managers;
 
-use Psr\Log\LoggerInterface;
+use Illuminate\Support\Facades\Log;
+use Monolog\Logger;
 use SimpleApiBitrix24\Exceptions\ApiClientBitrix24Exception;
 use Throwable;
 
 class LogManager
 {
     public function __construct(
-        private ?LoggerInterface $logger
+        private ?Logger $logger
     ) {
 
     }
@@ -32,16 +33,11 @@ class LogManager
         }
 
         if (empty($response['result']['result_error'])) {
-            $this->debug('Batch request', ['queries' => $queries, 'response' => $response]);
+            $this->debug('Batch request', ['query' => $queries, 'response' => $response]);
         }
 
         if (! empty($response['result']['result_error'])) {
-            $context = [];
-            array_walk($response['result']['result_error'], function($value, $key) use (&$context, $queries) {
-                $context[] = ['tried_query' => $queries[$key], 'got_error' => $value];
-            });
-
-            $this->warning('The batch request failed', $context);
+            $this->warning('The batch request contains errors', ['query' => $queries, 'response' => $response]);
         }
     }
 
@@ -56,7 +52,7 @@ class LogManager
         }
 
         if (isset($response['error'])) {
-            $context = ['tried_query' => $methodAndParams, 'got_error' => $response];
+            $context = ['query' => $methodAndParams, 'response' => $response];
             $this->warning('The single request failed', $context);
         }
     }
@@ -97,7 +93,7 @@ class LogManager
         }
 
         $exception = $exception ?? new ApiClientBitrix24Exception();
-        
+
         $this->logger->error($message, [
             'data' => $context,
             'trace' => $exception->getTraceAsString()

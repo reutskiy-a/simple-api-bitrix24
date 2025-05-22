@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace SimpleApiBitrix24;
 
-use Psr\Log\LoggerInterface;
+use Monolog\Logger;
 use SimpleApiBitrix24\Exceptions\ConnectorException;;
 use SimpleApiBitrix24\Connectors\ConnectorFactory;
 use SimpleApiBitrix24\Connectors\ConnectorInterface;
@@ -21,7 +21,7 @@ class ApiClientBitrix24
     public function __construct(
         ApiClientSettings $apiSettings,
         ?ApiDatabaseConfig $apiDatabaseConfig = null,
-        ?LoggerInterface $logger = null
+        ?Logger $logger = null
     ) {
         $this->apiSettings = $apiSettings;
         $this->apiDatabaseConfig = $apiDatabaseConfig;
@@ -31,6 +31,8 @@ class ApiClientBitrix24
 
     /**
      * @throws Throwable
+     *
+     * @example $api->call('crm.deal.get', ['id' => 2]);
      */
     public function call(string $method, array $params = []): array
     {
@@ -46,6 +48,12 @@ class ApiClientBitrix24
 
     /**
      * @throws Throwable
+     *
+     * @example
+     * $api->callBatch([
+     *     ['method' => 'scope', 'params' => []],
+     *     ['method' => 'crm.deal.get', 'params' => ['id' => 2]]
+     * ]);
      */
     public function callBatch(array $queries): array
     {

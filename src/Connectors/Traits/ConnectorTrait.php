@@ -24,7 +24,7 @@ trait ConnectorTrait
             'http_errors' => false,
             'verify' => false,
             'headers' => [
-                'Content-type' => 'application/json',
+                'Content-Type' => 'application/json',
                 'Accept' => 'application/json',
                 'User-Agent' => AppConstants::APP_INFO
             ],
