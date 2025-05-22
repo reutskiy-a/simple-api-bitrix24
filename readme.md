@@ -48,7 +48,10 @@ Local/distributed app installation example:
 
     5.1 [Стандартный пакетный запрос](#51-стандартный-пакетный-запрос)
 
-    5.2 [Сервис списочных методов для получения всех элементов](#52-сервис-списочных-методов-для-получения-всех-элементов)
+    5.2 [Батч сервис](#52-батч-сервис)
+   
+
+
 
 6. [Встроенный сервис обработки лимитов REST API](#6-встроенный-сервис-обработки-лимитов-rest-api)
     
@@ -254,14 +257,29 @@ Local/distributed app installation example:
     ]);
 ```
 
-### 5.2 Сервис списочных методов для получения всех элементов
+### 5.2 Батч сервис
 
-SimpleApiBitrix24\Services\Batch::getAll() работает только с методами списочного типа. Возвращает все элементы указанной сущости.
+> SimpleApiBitrix24\Services\Batch
+
+Получение всех элементов сущности. Работает только с методами списочного типа.
+
 ```php
     use SimpleApiBitrix24\Services\Batch;
     
     $batchService = new Batch($api);                   // $api объект SimpleApiBitrix24\ApiClientBitrix24
     $tasks = $batchService->getAll('tasks.task.list', ['filter' => ['STATUS' => 5]]);
+```
+
+Получение результата с учетом названий переданных ключей. Лимит: 50 упакованных запросов за один вызов.
+
+```php
+    use SimpleApiBitrix24\Services\Batch;
+    
+    $batchService = new Batch($api);                   // $api объект SimpleApiBitrix24\ApiClientBitrix24
+    $batchService->callWithKeys([
+        'scope_response' => ['method' => 'scope', 'params' => []],
+        'deal_list_response' => ['method' => 'crm.deal.list', 'params' => ['select' => ['ID', 'TITLE']]],
+    ]);
 ```
 
 ### 6. Встроенный сервис обработки лимитов REST API
@@ -329,7 +347,7 @@ $apiSettings->setTokenAuthEnabled(true)
 
    5.1 [Standard Batch Request](#51-standard-batch-request)
 
-   5.2 [Service for List Methods to Retrieve All Items](#52-service-for-list-methods-to-retrieve-all-items)
+   5.2 [Batch Service](#52-batch-service)
 
 6. [Built-in REST API Limit Handling Service](#6-built-in-rest-api-limit-handling-service)
 
@@ -534,15 +552,29 @@ Only Bitrix24 server error responses or exceptions from this SimpleApiBitrix24 p
     ]);
 ```
 
-### 5.2 Service for List Methods to Retrieve All Items
+### 5.2 Batch Service
 
-SimpleApiBitrix24\Services\Batch::getAll() works only with list-type methods and retrieves all items of the specified entity.
+> SimpleApiBitrix24\Services\Batch
+
+Retrieving all entity items. Works only with list-type methods.
 ```php
     use SimpleApiBitrix24\Services\Batch;
     
     $batchService = new Batch($api);                   // $api is an instance of SimpleApiBitrix24\ApiClientBitrix24
     $tasks = $batchService->getAll('tasks.task.list', ['filter' => ['STATUS' => 5]]);
 ```
+
+Retrieving results with specified key names. Limit: 50 batched requests per call.
+```php
+    use SimpleApiBitrix24\Services\Batch;
+    
+    $batchService = new Batch($api);                   // $api is an instance of SimpleApiBitrix24\ApiClientBitrix24
+    $batchService->callWithKeys([
+        'scope_response' => ['method' => 'scope', 'params' => []],
+        'deal_list_response' => ['method' => 'crm.deal.list', 'params' => ['select' => ['ID', 'TITLE']]],
+    ]);
+```
+
 
 ### 6. Built-in REST API Limit Handling Service
 > For more details on REST API limits, refer to the official documentation:
