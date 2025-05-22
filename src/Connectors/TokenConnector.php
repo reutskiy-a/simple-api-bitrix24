@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace SimpleApiBitrix24\Connectors;
 
 use GuzzleHttp\Client;
-use SimpleApiBitrix24\Connectors\Services\RefreshTokenService;
+use SimpleApiBitrix24\Connectors\Managers\ErrorResponseManager;
 use SimpleApiBitrix24\Connectors\Traits\ConnectorTrait;
 use SimpleApiBitrix24\DatabaseCore\Models\User;
 use SimpleApiBitrix24\Exceptions\ConnectorException;
@@ -15,15 +15,17 @@ class TokenConnector implements ConnectorInterface
 {
     use ConnectorTrait;
 
-    private const ERROR_EXPIRED_TOKEN = 'expired_token';
     private User $user;
-    private RefreshTokenService $refreshTokenService;
+    private ErrorResponseManager $errorResponseManager;
+
     private Client $httpClient;
 
-    public function __construct(User $user, RefreshTokenService $refreshTokenService)
-    {
+    public function __construct(
+        User $user,
+        ErrorResponseManager $errorResponseManager
+    ) {
         $this->user = $user;
-        $this->refreshTokenService = $refreshTokenService;
+        $this->errorResponseManager = $errorResponseManager;
         $this->httpClient = new Client();
     }
 
@@ -42,8 +44,7 @@ class TokenConnector implements ConnectorInterface
         $response = $this->makeHttpRequest($url, $data);
         $response = json_decode($response->getBody()->getContents(), true);
 
-        if (array_key_exists('error', $response) && $response['error'] == self::ERROR_EXPIRED_TOKEN) {
-            $this->refreshTokenService->refreshUserTokens($this->user);
+        if ($this->errorResponseManager->shouldTheRequestBeRepeated($response, $this->user)) {
             return $this->sendRequest($method, $params);
         }
 
@@ -65,8 +66,7 @@ class TokenConnector implements ConnectorInterface
         $response = $this->makeHttpRequest($url, $data);
         $response = json_decode($response->getBody()->getContents(), true);
 
-        if (array_key_exists('error', $response) && $response['error'] == self::ERROR_EXPIRED_TOKEN) {
-            $this->refreshTokenService->refreshUserTokens($this->user);
+        if ($this->errorResponseManager->shouldTheRequestBeRepeated($response, $this->user)) {
             return $this->sendBatchRequest($queries);
         }
 

@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace SimpleApiBitrix24\Connectors;
 
 use GuzzleHttp\Client;
+use SimpleApiBitrix24\Connectors\Managers\ErrorResponseManager;
+use SimpleApiBitrix24\Connectors\Services\ApiLimitService;
 use SimpleApiBitrix24\Connectors\Traits\ConnectorTrait;
 use SimpleApiBitrix24\Exceptions\ConnectorException;
 
@@ -13,11 +15,13 @@ class WebhookConnector implements ConnectorInterface
     use ConnectorTrait;
 
     private string|null $webhook;
+    private ErrorResponseManager $errorResponseManager;
     private Client $httpClient;
 
-    public function __construct(string $webhook)
+    public function __construct(string $webhook, ErrorResponseManager $errorResponseManager)
     {
         $this->webhook = $webhook;
+        $this->errorResponseManager = $errorResponseManager;
         $this->httpClient = new Client();
     }
 
@@ -30,8 +34,13 @@ class WebhookConnector implements ConnectorInterface
 
         $url = $this->webhook . $method . ".json";
         $response = $this->makeHttpRequest($url, $params);
+        $response = json_decode($response->getBody()->getContents(), true);
 
-        return json_decode($response->getBody()->getContents(), true);
+        if ($this->errorResponseManager->shouldTheRequestBeRepeated($response)) {
+            return $this->sendRequest($method, $params);
+        }
+
+        return $response;
     }
 
     /**
@@ -46,8 +55,13 @@ class WebhookConnector implements ConnectorInterface
         $data = ['cmd' => $httpQuery, 'halt' => 0];
 
         $response = $this->makeHttpRequest($url, $data);
+        $response = json_decode($response->getBody()->getContents(), true);
 
-        return json_decode($response->getBody()->getContents(), true);
+        if ($this->errorResponseManager->shouldTheRequestBeRepeated($response)) {
+            return $this->sendBatchRequest($queries);
+        }
+
+        return $response;
     }
 
     /**
