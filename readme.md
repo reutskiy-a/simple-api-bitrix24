@@ -310,8 +310,8 @@ use SimpleApiBitrix24\ApiClientSettings;
 $apiSettings = new ApiClientSettings();
 $apiSettings->setTokenAuthEnabled(true)
             ->setDefaultConnection('your_member_id')
-            ->setQueryLimitExceededService(handleEnabled: true, usleep: 500000)
-            ->setOperationTimeLimitService(handleEnabled: true, usleep: 5000000);
+            ->setQueryLimitExceededHandler(handleEnabled: true, usleep: 500000)
+            ->setOperationTimeLimitHandler(handleEnabled: true, usleep: 5000000);
 ```
 По умолчанию обработка этих ошибок отключена, при включении укажите время ожидания в микросекундах.
 При получении ответа с одной из этих ошибок API Client будет делать повторный запрос через заданный интервал времени,
@@ -604,8 +604,8 @@ use SimpleApiBitrix24\ApiClientSettings;
 $apiSettings = new ApiClientSettings();
 $apiSettings->setTokenAuthEnabled(true)
             ->setDefaultConnection('your_member_id')
-            ->setQueryLimitExceededService(handleEnabled: true, usleep: 500000)
-            ->setOperationTimeLimitService(handleEnabled: true, usleep: 5000000);
+            ->setQueryLimitExceededHandler(handleEnabled: true, usleep: 500000)
+            ->setOperationTimeLimitHandler(handleEnabled: true, usleep: 5000000);
 ```
 By default, handling of these errors is disabled. When enabled, specify the wait time in microseconds.
 Upon receiving one of these error responses, the API client will retry the request after the specified time interval

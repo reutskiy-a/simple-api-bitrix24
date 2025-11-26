@@ -5,51 +5,46 @@ declare(strict_types=1);
 namespace SimpleApiBitrix24;
 
 
-use SimpleApiBitrix24\Connectors\Services\OperationTimeLimitService;
-use SimpleApiBitrix24\Connectors\Services\QueryLimitExceededService;
+use SimpleApiBitrix24\Connectors\Handlers\OperationTimeLimitHandler;
+use SimpleApiBitrix24\Connectors\Handlers\QueryLimitExceededHandler;
+use SimpleApiBitrix24\Connectors\Models\Webhook;
+use SimpleApiBitrix24\DatabaseCore\Models\User;
+use SimpleApiBitrix24\Enums\AuthType;
+use SimpleApiBitrix24\Utils\Helper;
 
 class ApiClientSettings
 {
     private bool $webhookAuthEnabled;
     private bool $tokenAuthEnabled;
-    private string $defaultConnection = '';
-    private ?QueryLimitExceededService $queryLimitExceededService = null;
-    private ?OperationTimeLimitService $operationTimeLimitService = null;
+    private Webhook|User|null $defaultConnection = null;
+    private ?QueryLimitExceededHandler $queryLimitExceededHandler = null;
+    private ?OperationTimeLimitHandler $operationTimeLimitHandler = null;
 
-    public function setWebhookAuthEnabled(bool $bool): ApiClientSettings
+    public function __construct(AuthType $authType)
     {
-        $this->webhookAuthEnabled = $bool;
-        $this->tokenAuthEnabled = !$bool;
+        $this->webhookAuthEnabled = $authType === AuthType::WEBHOOK;
+        $this->tokenAuthEnabled = $authType === AuthType::TOKEN;
+    }
 
+    public function setDefaultConnection(Webhook|User $credentials): ApiClientSettings
+    {
+        $this->defaultConnection = $credentials;
         return $this;
     }
 
-    public function setTokenAuthEnabled(bool $bool): ApiClientSettings
-    {
-        $this->tokenAuthEnabled = $bool;
-        $this->webhookAuthEnabled = !$bool;
-        return $this;
-    }
-
-    public function setDefaultConnection(string $webhookOrMemberId): ApiClientSettings
-    {
-        $this->defaultConnection = $webhookOrMemberId;
-        return $this;
-    }
-
-    public function setQueryLimitExceededService(
+    public function setQueryLimitExceededHandler(
         bool $handleEnabled,
-        int $usleep = QueryLimitExceededService::USLEEP_DEFAULT
+        int $usleep = QueryLimitExceededHandler::USLEEP_DEFAULT
     ): ApiClientSettings {
-        $this->queryLimitExceededService = new QueryLimitExceededService($handleEnabled, $usleep);
+        $this->queryLimitExceededHandler = new QueryLimitExceededHandler($handleEnabled, $usleep);
         return $this;
     }
 
-    public function setOperationTimeLimitService(
+    public function setOperationTimeLimitHandler(
         bool $handleEnabled,
-        int $usleep = OperationTimeLimitService::USLEEP_DEFAULT
+        int $usleep = OperationTimeLimitHandler::USLEEP_DEFAULT
     ): ApiClientSettings {
-        $this->operationTimeLimitService = new OperationTimeLimitService($handleEnabled, $usleep);
+        $this->operationTimeLimitHandler = new OperationTimeLimitHandler($handleEnabled, $usleep);
         return $this;
     }
 
@@ -63,26 +58,30 @@ class ApiClientSettings
         return $this->tokenAuthEnabled;
     }
 
-    public function getDefaultConnection(): string
+    public function getDefaultConnection(): Webhook|User|null
     {
+        if ($this->webhookAuthEnabled && $this->defaultConnection === null) {
+            return new Webhook('null');
+        }
+
         return $this->defaultConnection;
     }
 
-    public function getQueryLimitExceededService(): QueryLimitExceededService
+    public function getQueryLimitExceededHandler(): QueryLimitExceededHandler
     {
-        if (null === $this->queryLimitExceededService) {
-            $this->queryLimitExceededService = new QueryLimitExceededService();
+        if (null === $this->queryLimitExceededHandler) {
+            $this->queryLimitExceededHandler = new QueryLimitExceededHandler(true);
         }
 
-        return $this->queryLimitExceededService;
+        return $this->queryLimitExceededHandler;
     }
 
-    public function getOperationTimeLimitService(): OperationTimeLimitService
+    public function getOperationTimeLimitHandler(): OperationTimeLimitHandler
     {
-        if (null === $this->operationTimeLimitService) {
-            $this->operationTimeLimitService = new OperationTimeLimitService();
+        if (null === $this->operationTimeLimitHandler) {
+            $this->operationTimeLimitHandler = new OperationTimeLimitHandler(true);
         }
 
-        return $this->operationTimeLimitService;
+        return $this->operationTimeLimitHandler;
     }
 }

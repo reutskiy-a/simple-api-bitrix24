@@ -4,38 +4,35 @@ declare(strict_types=1);
 
 namespace SimpleApiBitrix24\Tests\Unit\Connectors;
 
-use PHPUnit\Framework\TestCase;
 use SimpleApiBitrix24\ApiClientSettings;
+use SimpleApiBitrix24\ApiDatabaseConfig;
 use SimpleApiBitrix24\Connectors\ConnectorFactory;
+use SimpleApiBitrix24\Connectors\Models\Webhook;
 use SimpleApiBitrix24\Connectors\TokenConnector;
 use SimpleApiBitrix24\Connectors\WebhookConnector;
-use SimpleApiBitrix24\Tests\Environment\Traits\AppConfigurationTrait;
+use SimpleApiBitrix24\Enums\AuthType;
+use SimpleApiBitrix24\Tests\BaseTestCase;
 
-class ConnectorFactoryTest extends TestCase
+class ConnectorFactoryTest extends BaseTestCase
 {
-    use AppConfigurationTrait;
-
-    private ApiClientSettings $apiSettings;
-
-    public function setUp(): void
+    public function test_factory_returns_webhook_connector():void
     {
-        $this->apiSettings = new ApiClientSettings();
+        $apiSettings = new ApiClientSettings(AuthType::WEBHOOK);
+        $apiSettings->setDefaultConnection(new Webhook('https://webhook.here'));
+        $connector = ConnectorFactory::create($apiSettings);
+
+        $this->assertInstanceOf(WebhookConnector::class, $connector);
     }
 
-    public function testFactoryReturnsWebhookConnector():void
+    public function test_factory_returns_token_connector(): void
     {
-        $this->apiSettings->setWebhookAuthEnabled(true);
-        $webhookConnectorObject = ConnectorFactory::create($this->apiSettings);
+        $apiSettings = new ApiClientSettings(AuthType::TOKEN);
 
-        $this->assertInstanceOf(WebhookConnector::class, $webhookConnectorObject);
-    }
+        $connector = ConnectorFactory::create(
+            $apiSettings,
+            ApiDatabaseConfig::build($this->createPdo($_ENV['DB_DRIVER_SQLITE']))
+        );
 
-    public function testFactoryReturnsTokenConnector(): void
-    {
-        $this->apiSettings->setTokenAuthEnabled(true);
-        $databaseConfig = $this->getApiDatabaseConfigMockWithoutUserData();
-        $tokenConnectorObject = ConnectorFactory::create($this->apiSettings, $databaseConfig);
-
-        $this->assertInstanceOf(TokenConnector::class, $tokenConnectorObject);
+        $this->assertInstanceOf(TokenConnector::class, $connector);
     }
 }

@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace SimpleApiBitrix24\Connectors;
 
 use GuzzleHttp\Client;
+use SimpleApiBitrix24\Connectors\Handlers\Dto\ErrorContext;
+use SimpleApiBitrix24\Connectors\Interfaces\ConnectorInterface;
 use SimpleApiBitrix24\Connectors\Managers\ErrorResponseManager;
 use SimpleApiBitrix24\Connectors\Traits\ConnectorTrait;
 use SimpleApiBitrix24\DatabaseCore\Models\User;
@@ -15,13 +17,13 @@ class TokenConnector implements ConnectorInterface
 {
     use ConnectorTrait;
 
-    private User $user;
+    private ?User $user;
     private ErrorResponseManager $errorResponseManager;
 
     private Client $httpClient;
 
     public function __construct(
-        User $user,
+        ?User $user,
         ErrorResponseManager $errorResponseManager
     ) {
         $this->user = $user;
@@ -37,14 +39,14 @@ class TokenConnector implements ConnectorInterface
     {
         $this->assertValidCredentials($this->user);
 
-        $url = $this->user->getClientEndpoint() . $method . ".json";
+        $url = $this->getClientEndPoint($this->user->getDomain()) . $method . ".json";
         $data = $params;
-        $data['auth'] = $this->user->getAccessToken();
+        $data['auth'] = $this->user->getAuthToken();
 
         $response = $this->makeHttpRequest($url, $data);
         $response = json_decode($response->getBody()->getContents(), true);
 
-        if ($this->errorResponseManager->shouldTheRequestBeRepeated($response, $this->user)) {
+        if ($this->errorResponseManager->shouldTheRequestBeRepeated(new ErrorContext($response, $this->user))) {
             return $this->sendRequest($method, $params);
         }
 
@@ -59,14 +61,14 @@ class TokenConnector implements ConnectorInterface
     {
         $this->assertValidCredentials($this->user);
 
-        $url = $this->user->getClientEndpoint() . "batch.json";
+        $url = $this->getClientEndPoint($this->user->getDomain()) . "batch.json";
         $httpQuery = $this->buildBatchQueries($queries);
-        $data = ['cmd' => $httpQuery, 'halt' => 0, 'auth' => $this->user->getAccessToken()];
+        $data = ['cmd' => $httpQuery, 'halt' => 0, 'auth' => $this->user->getAuthToken()];
 
         $response = $this->makeHttpRequest($url, $data);
         $response = json_decode($response->getBody()->getContents(), true);
 
-        if ($this->errorResponseManager->shouldTheRequestBeRepeated($response, $this->user)) {
+        if ($this->errorResponseManager->shouldTheRequestBeRepeated(new ErrorContext($response, $this->user))) {
             return $this->sendBatchRequest($queries);
         }
 
@@ -78,8 +80,10 @@ class TokenConnector implements ConnectorInterface
      */
     private function assertValidCredentials($user): bool
     {
-        if (empty($user->getIdPrimaryKey())) {
-            throw new ConnectorException("User not found in database with the given member_id: '{$user->getMemberId()}'");
+        if ($user === null) {
+            throw new ConnectorException(
+                'User not found in the database or User object was not used with the
+                methods ApiClientBitrix24::connectTo or ApiClientSettings::setDefaultConnection');
         }
 
         return true;

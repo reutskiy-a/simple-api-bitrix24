@@ -170,6 +170,7 @@ class Batch
             if (is_array($value) && ! key_exists('error', $value)) {
 
                 // для списочных методов
+                // for list methods
                 if (is_array(reset($value))
                     && is_string(array_key_first($value))
                     && key(reset($value)) === 0) {
@@ -181,12 +182,14 @@ class Batch
                 }
 
                 // для методов возвращающих массив данных обёрнутых в строковый ключ
+                // for methods that return an array of data wrapped in a string key
                 if (is_array(reset($value)) && is_string(array_key_first($value))) {
                     $result = array_merge($result, [reset($value)]);
                     continue;
                 }
 
                 // для методов возвращающих сразу массив данных
+                // for methods returning an array of data directly
                 if (! is_array(reset($value)) && is_string(array_key_first($value))) {
                     $result = array_merge($result, [$value]);
                     continue;

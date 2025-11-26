@@ -5,11 +5,15 @@ declare(strict_types=1);
 namespace SimpleApiBitrix24;
 
 use Monolog\Logger;
-use SimpleApiBitrix24\Exceptions\ConnectorException;;
 use SimpleApiBitrix24\Connectors\ConnectorFactory;
-use SimpleApiBitrix24\Connectors\ConnectorInterface;
+use SimpleApiBitrix24\Connectors\Interfaces\ConnectorInterface;
+use SimpleApiBitrix24\Connectors\Models\Webhook;
+use SimpleApiBitrix24\DatabaseCore\Models\User;
+use SimpleApiBitrix24\Exceptions\ConnectorException;
 use SimpleApiBitrix24\Managers\LogManager;
 use Throwable;
+
+;
 
 class ApiClientBitrix24
 {
@@ -27,6 +31,11 @@ class ApiClientBitrix24
         $this->apiDatabaseConfig = $apiDatabaseConfig;
         $this->logManager = new LogManager($logger);
         $this->connector = ConnectorFactory::create($apiSettings, $apiDatabaseConfig);
+    }
+
+    public function getConnectionObject(): Webhook|User|null
+    {
+        return $this->apiSettings->getDefaultConnection();
     }
 
     /**
@@ -74,19 +83,20 @@ class ApiClientBitrix24
 
     /**
      * Use this method to change the connection to the Bitrix24 API.
-     * Alternatively, use it when you need a second ApiClient instance, e.g.: 
+     * Alternatively, use it when you need a second ApiClient instance, e.g.:
      * ```php
-     * $secondApi = cloned $firstApi; $secondApi->ConnectTo('memberId');
+     * $secondApi = cloned $firstApi; $secondApi->connectTo($credentials);
      * ```
-     * 
-     * @param string $webhookOrMemberId Webhook url or member id for connection
-     * @return void
+     *
+     * @param Webhook|User $credentials
+     * @return string
      * @throws ConnectorException
      */
-    public function connectTo(string $webhookOrMemberId): void
+    public function connectTo(Webhook|User $credentials): string
     {
-        $this->apiSettings->setDefaultConnection($webhookOrMemberId);
+        $this->apiSettings->setDefaultConnection($credentials);
         $this->connector = ConnectorFactory::create($this->apiSettings, $this->apiDatabaseConfig);
+        return get_class($this->connector);
     }
 
 }

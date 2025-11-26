@@ -31,4 +31,13 @@ trait ConnectorTrait
             'json' => $data
         ]);
     }
+
+    private function getClientEndPoint(string $clientDomain): string
+    {
+        if (filter_var($clientDomain, FILTER_VALIDATE_URL) !== false) {
+            return $clientDomain . "/rest/";
+        }
+
+        return "https://{$clientDomain}/rest/";
+    }
 }

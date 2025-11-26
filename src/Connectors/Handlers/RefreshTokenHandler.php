@@ -2,17 +2,23 @@
 
 declare(strict_types=1);
 
-namespace SimpleApiBitrix24\Connectors\Services;
+namespace SimpleApiBitrix24\Connectors\Handlers;
 
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\GuzzleException;
+use SimpleApiBitrix24\Connectors\Handlers\Dto\ErrorContext;
+use SimpleApiBitrix24\Connectors\Interfaces\ErrorHandlerInterface;
 use SimpleApiBitrix24\Constants\AppConstants;
 use SimpleApiBitrix24\DatabaseCore\Models\User;
 use SimpleApiBitrix24\DatabaseCore\UserRepository;
 use SimpleApiBitrix24\Exceptions\RefreshTokenException;
 
-class RefreshTokenService
+class RefreshTokenHandler implements ErrorHandlerInterface
 {
+    private const ERROR_TEMPLATE = [
+        'error' => 'expired_token',
+        'error_description' => 'The access token provided has expired.'
+    ];
     private const ERROR_WRONG_CLIENT = 'wrong_client';
     private const ERROR_INVALID_GRANT = 'invalid_grant';
     private const TOKEN_REFRESH_URL = 'https://oauth.bitrix.info/oauth/token/';
@@ -27,11 +33,26 @@ class RefreshTokenService
         $this->httpClient = new Client();
     }
 
+    public function canHandle(ErrorContext $errorContext): bool
+    {
+        if ($errorContext->response['error'] === self::ERROR_TEMPLATE['error'] &&
+            $errorContext->response['error_description'] === self::ERROR_TEMPLATE['error_description']) {
+            return true;
+        }
+
+        return false;
+    }
+
+    public function handle(ErrorContext $errorContext): bool
+    {
+        return $this->refreshUserTokens($errorContext->user);
+    }
+
     /**
      * @throws RefreshTokenException
      * @throws GuzzleException
      */
-    public function refreshUserTokens(User $user): bool
+    private function refreshUserTokens(User $user): bool
     {
         $this->refreshTokenAttempts++;
 
@@ -73,22 +94,31 @@ class RefreshTokenService
         }
 
         if ($response['error'] == self::ERROR_WRONG_CLIENT) {
-            throw new RefreshTokenException(
-                json_encode($response) . ' ' . "An error occurred during the token refresh request. The application's client_id or client_secret are incorrect."
+            $errorMessage = sprintf(
+                "%s An error occurred during the token refresh request. The application's client_id or client_secret are incorrect.",
+                json_encode($response)
             );
+
+            throw new RefreshTokenException($errorMessage);
         }
 
         if ($response['error'] == self::ERROR_INVALID_GRANT) {
-            throw new RefreshTokenException(
-                json_encode($response) . ' ' . "An error occurred during the token refresh request. The refresh token is either invalid or expired, or the application's client_id and client_secret are incorrect."
+            $errorMessage = sprintf(
+                "%s An error occurred during the token refresh request. The refresh token is either invalid or expired, or the application's client_id and client_secret are incorrect.",
+                json_encode($response)
             );
+
+            throw new RefreshTokenException($errorMessage);
+        }
+
+        if (array_key_exists("error", $response)) {
+            throw new RefreshTokenException(json_encode($response, JSON_UNESCAPED_UNICODE));
         }
     }
 
     private function updateUserTokens(User $user, array $response): bool
     {
-        $user->setAccessToken($response['access_token']);
-        $user->setExpiresIn($response['expires_in']);
+        $user->setAuthToken($response['access_token']);
         $user->setRefreshToken($response['refresh_token']);
 
         return $this->userRepository->update($user);

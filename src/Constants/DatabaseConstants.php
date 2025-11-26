@@ -11,15 +11,15 @@ namespace SimpleApiBitrix24\Constants;
  */
 class DatabaseConstants
 {
-    const TABLE_NAME = 'api_tokens_bitrix24';
-    const PRIMARY_KEY_COLUMN_NAME = 'id';
+    const TABLE_NAME = 'b24_users';
+    const USER_ID_COLUMN_NAME = 'user_id';
     const MEMBER_ID_COLUMN_NAME = 'member_id';
-    const ACCESS_TOKEN_COLUMN_NAME = 'access_token';
-    const EXPIRES_IN_COLUMN_NAME = 'expires_in';
-    const APPLICATION_TOKEN_COLUMN_NAME = 'application_token';
+    const IS_ADMIN_COLUMN_NAME = 'is_admin';
+    const AUTH_TOKEN_COLUMN_NAME = 'auth_token';
     const REFRESH_TOKEN_COLUMN_NAME = 'refresh_token';
     const DOMAIN_COLUMN_NAME = 'domain';
-    const CLIENT_END_POINT_COLUMN_NAME = 'client_endpoint';
     const CLIENT_ID_COLUMN_NAME = 'client_id';
     const CLIENT_SECRET_COLUMN_NAME = 'client_secret';
+    const CREATED_AT_COLUMN_NAME = 'created_at';
+    const UPDATED_AT_COLUMN_NAME = 'updated_at';
 }

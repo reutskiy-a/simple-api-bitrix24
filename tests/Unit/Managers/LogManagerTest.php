@@ -9,7 +9,7 @@ use SimpleApiBitrix24\Managers\LogManager;
 
 class LogManagerTest extends TestCase
 {
-    public function testHandleBatchResponseErrorDoesNotThrowExceptionWhenLoggerIsNull(): void
+    public function test_handle_batch_response_error_does_not_throw_exception_when_logger_is_null(): void
     {
         $logManager = new LogManager(null);
         $queries = [];
@@ -20,7 +20,7 @@ class LogManagerTest extends TestCase
         $this->expectNotToPerformAssertions();
     }
 
-    public function testHandleResponseErrorDoesNotThrowExceptionWhenLoggerIsNull(): void
+    public function test_handle_response_error_does_not_throw_exception_when_logger_is_null(): void
     {
         $logManager = new LogManager(null);
         $methodAndParams = [];

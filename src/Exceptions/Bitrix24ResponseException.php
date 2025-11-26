@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace SimpleApiBitrix24\Exceptions;
 
-class QueryLimitExceededException extends Bitrix24ResponseException
+class Bitrix24ResponseException extends \Exception
 {
 
 }

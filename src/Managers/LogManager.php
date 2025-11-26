@@ -47,11 +47,11 @@ class LogManager
             return;
         }
 
-        if (! isset($response['error'])) {
+        if (! array_key_exists('error', $response)) {
             $this->debug('Single request', ['query' => $methodAndParams, 'response' => $response]);
         }
 
-        if (isset($response['error'])) {
+        if (array_key_exists('error', $response)) {
             $context = ['query' => $methodAndParams, 'response' => $response];
             $this->warning('The single request failed', $context);
         }

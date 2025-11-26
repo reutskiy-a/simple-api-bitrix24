@@ -4,76 +4,28 @@ declare(strict_types=1);
 
 namespace SimpleApiBitrix24\DatabaseCore\Models;
 
+use Carbon\CarbonImmutable;
+
 class User
 {
-    private readonly int|null $idPrimaryKey;
-    private string $memberId;
-    private string $accessToken;
-    private string|int $expiresIn;
-    private string $applicationToken;
-    private string $refreshToken;
-    private string $domain;
-    private string $clientEndpoint;
-    private string $clientId;
-    private string $clientSecret;
+    public function __construct(
+        private readonly int $userId,
+        private readonly string $memberId,
+        private bool   $isAdmin,
+        private string $authToken,
+        private string $refreshToken,
+        private readonly string $domain,
+        private readonly string $clientId,
+        private readonly string $clientSecret,
+        private readonly CarbonImmutable $createdAt,
+        private CarbonImmutable $updatedAt,
+    ) {
 
-    public function __construct(int|null $idPrimaryKey = null)
-    {
-        $this->idPrimaryKey = $idPrimaryKey;
     }
 
-    public function setMemberId(string $memberId): User
+    public function getUserId(): int
     {
-        $this->memberId = $memberId;
-        return $this;
-    }
-
-    public function setAccessToken(string $accessToken): User
-    {
-        $this->accessToken = $accessToken;
-        return $this;
-    }
-
-    public function setExpiresIn(string|int $expiresIn): User
-    {
-        $this->expiresIn = $expiresIn;
-        return $this;
-    }
-
-    public function setApplicationToken(string $applicationToken): User
-    {
-        $this->applicationToken = $applicationToken;
-        return $this;
-    }
-
-    public function setRefreshToken(string $refreshToken): User
-    {
-        $this->refreshToken = $refreshToken;
-        return $this;
-    }
-
-    public function setDomain(string $domain): User
-    {
-        $this->domain = $domain;
-        return $this;
-    }
-
-    public function setClientEndpoint(string $clientEndpoint): User
-    {
-        $this->clientEndpoint = $clientEndpoint;
-        return $this;
-    }
-
-    public function setClientId(string $clientId): User
-    {
-        $this->clientId = $clientId;
-        return $this;
-    }
-
-    public function setClientSecret(string $clientSecret): User
-    {
-        $this->clientSecret = $clientSecret;
-        return $this;
+        return $this->userId;
     }
 
     public function getMemberId(): string
@@ -81,19 +33,14 @@ class User
         return $this->memberId;
     }
 
-    public function getAccessToken(): string
+    public function isAdmin(): bool
     {
-        return $this->accessToken;
+        return $this->isAdmin;
     }
 
-    public function getExpiresIn(): string|int
+    public function getAuthToken(): string
     {
-        return $this->expiresIn;
-    }
-
-    public function getApplicationToken(): string
-    {
-        return $this->applicationToken;
+        return $this->authToken;
     }
 
     public function getRefreshToken(): string
@@ -106,11 +53,6 @@ class User
         return $this->domain;
     }
 
-    public function getClientEndpoint(): string
-    {
-        return $this->clientEndpoint;
-    }
-
     public function getClientId(): string
     {
         return $this->clientId;
@@ -121,8 +63,36 @@ class User
         return $this->clientSecret;
     }
 
-    public function getIdPrimaryKey(): int|null
+    public function getCreatedAt(): CarbonImmutable
     {
-        return $this->idPrimaryKey;
+        return $this->createdAt;
+    }
+
+    public function getUpdatedAt(): CarbonImmutable
+    {
+        return $this->updatedAt;
+    }
+
+    public function setIsAdmin(bool $isAdmin): void
+    {
+        $this->isAdmin = $isAdmin;
+        $this->updateTimestamp();
+    }
+
+    public function setAuthToken(string $authToken): void
+    {
+        $this->authToken = $authToken;
+        $this->updateTimestamp();
+    }
+
+    public function setRefreshToken(string $refreshToken): void
+    {
+        $this->refreshToken = $refreshToken;
+        $this->updateTimestamp();
+    }
+
+    private function updateTimestamp(): void
+    {
+        $this->updatedAt = CarbonImmutable::now();
     }
 }

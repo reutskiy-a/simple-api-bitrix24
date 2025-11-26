@@ -4,63 +4,58 @@ declare(strict_types=1);
 
 namespace SimpleApiBitrix24\Connectors\Managers;
 
-use SimpleApiBitrix24\Connectors\Services\EmptyResponseService;
-use SimpleApiBitrix24\Connectors\Services\OperationTimeLimitService;
-use SimpleApiBitrix24\Connectors\Services\QueryLimitExceededService;
-use SimpleApiBitrix24\Connectors\Services\RefreshTokenService;
-use SimpleApiBitrix24\DatabaseCore\Models\User;
+use SimpleApiBitrix24\Connectors\Handlers\AccessDeniedHandler;
+use SimpleApiBitrix24\Connectors\Handlers\DefaultErrorHandler;
+use SimpleApiBitrix24\Connectors\Handlers\Dto\ErrorContext;
+use SimpleApiBitrix24\Connectors\Handlers\EmptyResponseHandler;
+use SimpleApiBitrix24\Connectors\Interfaces\ErrorHandlerInterface;
 
+/**
+ * checks every response received from the bitrix24 server for errors
+ */
 class ErrorResponseManager
 {
-    private const ERROR_EXPIRED_TOKEN = 'expired_token';
+    private  EmptyResponseHandler $emptyResponseHandler;
+    private array $handlers = [];
 
-    public function __construct(
-        private EmptyResponseService $emptyResponseService,
-        private OperationTimeLimitService $operationTimeLimitService,
-        private QueryLimitExceededService $queryLimitExceededService,
-        private ?RefreshTokenService $refreshTokenService = null,
-    ) {
-
+    public function __construct()
+    {
+        $this->loadDefaultErrorHandlers();
     }
 
-    public function shouldTheRequestBeRepeated($response, ?User $user = null): bool
+    public function addErrorHandler(ErrorHandlerInterface $errorHandler): self
     {
-        if (is_array($response) && empty($response)) {
-            return $this->handleEmptyResponse($response);
+        array_unshift($this->handlers, $errorHandler);
+        return $this;
+    }
+
+    public function shouldTheRequestBeRepeated(ErrorContext $errorContext): bool
+    {
+        // first, check if the response is empty
+        if (empty($errorContext->response)) {
+            return $this->emptyResponseHandler->handle($errorContext);
         }
 
-        if (isset($response['error'])) {
-            return $this->handlerErrorKey($response, $user);
+        if (array_key_exists('error', $errorContext->response) &&
+            array_key_exists('error_description', $errorContext->response)) {
+
+            foreach ($this->handlers as $handler) {
+                if ($handler->canHandle($errorContext)) {
+                    return $handler->handle($errorContext);
+                };
+            }
         }
 
         return false;
     }
 
-    private function handleEmptyResponse($response): bool
+    private function loadDefaultErrorHandlers(): void
     {
-        if ($this->emptyResponseService->shouldTheRequestBeRepeated($response)) {
-            return true;
-        }
+        // DefaultErrorHandler must be the last one
+        $this->handlers[] =  new AccessDeniedHandler();
+        $this->handlers[] =  new DefaultErrorHandler();
 
-        return false;
-    }
-
-    private function handlerErrorKey($response, ?User $user = null): bool
-    {
-        if (array_key_exists('error', $response) && $response['error'] == self::ERROR_EXPIRED_TOKEN) {
-            $this->refreshTokenService->refreshUserTokens($user);
-            return true;
-        }
-
-        if ($this->queryLimitExceededService->shouldTheRequestBeRepeated($response)) {
-            return true;
-        }
-
-        if ($this->operationTimeLimitService->shouldTheRequestBeRepeated($response)) {
-            return true;
-        }
-
-        return false;
+        $this->emptyResponseHandler = new EmptyResponseHandler();
     }
 
 }

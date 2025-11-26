@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace SimpleApiBitrix24\Connectors;
+namespace SimpleApiBitrix24\Connectors\Interfaces;
 
 interface ConnectorInterface
 {

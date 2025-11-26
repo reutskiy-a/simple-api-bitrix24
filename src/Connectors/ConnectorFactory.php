@@ -6,11 +6,9 @@ namespace SimpleApiBitrix24\Connectors;
 
 use SimpleApiBitrix24\ApiClientSettings;
 use SimpleApiBitrix24\ApiDatabaseConfig;
+use SimpleApiBitrix24\Connectors\Handlers\RefreshTokenHandler;
+use SimpleApiBitrix24\Connectors\Interfaces\ConnectorInterface;
 use SimpleApiBitrix24\Connectors\Managers\ErrorResponseManager;
-use SimpleApiBitrix24\Connectors\Services\EmptyResponseService;
-use SimpleApiBitrix24\Connectors\Services\OperationTimeLimitService;
-use SimpleApiBitrix24\Connectors\Services\QueryLimitExceededService;
-use SimpleApiBitrix24\Connectors\Services\RefreshTokenService;
 use SimpleApiBitrix24\DatabaseCore\UserRepository;
 use SimpleApiBitrix24\Exceptions\ConnectorException;
 
@@ -20,30 +18,24 @@ abstract class ConnectorFactory
         ApiClientSettings $apiSettings,
         ?ApiDatabaseConfig $apiDatabaseConfig = null): ConnectorInterface
     {
+        $errorResponseManager = new ErrorResponseManager();
+        $errorResponseManager
+            ->addErrorHandler($apiSettings->getOperationTimeLimitHandler())
+            ->addErrorHandler($apiSettings->getQueryLimitExceededHandler());
+
 
         if ($apiSettings->isWebhookAuthEnabled()) {
-            $errorResponseManager = new ErrorResponseManager(
-                new EmptyResponseService(handleEnabled: true),
-                $apiSettings->getOperationTimeLimitService(),
-                $apiSettings->getQueryLimitExceededService(),
-            );
-
             return new WebhookConnector($apiSettings->getDefaultConnection(), $errorResponseManager);
         }
 
         if ($apiSettings->isTokenAuthEnabled()) {
             $userRepository = new UserRepository($apiDatabaseConfig);
-            $refreshTokenService = new RefreshTokenService($userRepository);
-            $user = $userRepository->getUserByMemberId($apiSettings->getDefaultConnection());
+            $refreshTokenService = new RefreshTokenHandler($userRepository);
 
-            $errorResponseManager = new ErrorResponseManager(
-                new EmptyResponseService(handleEnabled: true),
-                $apiSettings->getOperationTimeLimitService(),
-                $apiSettings->getQueryLimitExceededService(),
-                $refreshTokenService
-            );
+            $errorResponseManager
+                ->addErrorHandler($refreshTokenService);
 
-            return new TokenConnector($user, $errorResponseManager);
+            return new TokenConnector($apiSettings->getDefaultConnection(), $errorResponseManager);
         }
 
         throw new ConnectorException('No connector is specified in the settings');

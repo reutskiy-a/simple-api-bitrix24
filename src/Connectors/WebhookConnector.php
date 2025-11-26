@@ -5,8 +5,10 @@ declare(strict_types=1);
 namespace SimpleApiBitrix24\Connectors;
 
 use GuzzleHttp\Client;
+use SimpleApiBitrix24\Connectors\Handlers\Dto\ErrorContext;
+use SimpleApiBitrix24\Connectors\Interfaces\ConnectorInterface;
 use SimpleApiBitrix24\Connectors\Managers\ErrorResponseManager;
-use SimpleApiBitrix24\Connectors\Services\ApiLimitService;
+use SimpleApiBitrix24\Connectors\Models\Webhook;
 use SimpleApiBitrix24\Connectors\Traits\ConnectorTrait;
 use SimpleApiBitrix24\Exceptions\ConnectorException;
 
@@ -14,11 +16,11 @@ class WebhookConnector implements ConnectorInterface
 {
     use ConnectorTrait;
 
-    private string|null $webhook;
+    private Webhook $webhook;
     private ErrorResponseManager $errorResponseManager;
     private Client $httpClient;
 
-    public function __construct(string $webhook, ErrorResponseManager $errorResponseManager)
+    public function __construct(Webhook $webhook, ErrorResponseManager $errorResponseManager)
     {
         $this->webhook = $webhook;
         $this->errorResponseManager = $errorResponseManager;
@@ -30,13 +32,13 @@ class WebhookConnector implements ConnectorInterface
      */
     public function sendRequest(string $method, array $params): array
     {
-        $this->assertValidCredentials($this->webhook);
+        $this->assertValidCredentials($this->webhook->getUrl());
 
-        $url = $this->webhook . $method . ".json";
+        $url = $this->webhook->getUrl() . $method . ".json";
         $response = $this->makeHttpRequest($url, $params);
         $response = json_decode($response->getBody()->getContents(), true);
 
-        if ($this->errorResponseManager->shouldTheRequestBeRepeated($response)) {
+        if ($this->errorResponseManager->shouldTheRequestBeRepeated(new ErrorContext($response))) {
             return $this->sendRequest($method, $params);
         }
 
@@ -48,16 +50,16 @@ class WebhookConnector implements ConnectorInterface
      */
     public function sendBatchRequest(array $queries): array
     {
-        $this->assertValidCredentials($this->webhook);
+        $this->assertValidCredentials($this->webhook->getUrl());
 
-        $url = $this->webhook . "batch.json";
+        $url = $this->webhook->getUrl() . "batch.json";
         $httpQuery = $this->buildBatchQueries($queries);
         $data = ['cmd' => $httpQuery, 'halt' => 0];
 
         $response = $this->makeHttpRequest($url, $data);
         $response = json_decode($response->getBody()->getContents(), true);
 
-        if ($this->errorResponseManager->shouldTheRequestBeRepeated($response)) {
+        if ($this->errorResponseManager->shouldTheRequestBeRepeated(new ErrorContext($response))) {
             return $this->sendBatchRequest($queries);
         }
 
@@ -67,12 +69,12 @@ class WebhookConnector implements ConnectorInterface
     /**
      * @throws ConnectorException
      */
-    private function assertValidCredentials($webhook): bool
+    private function assertValidCredentials($webhookUrl): bool
     {
-        if (filter_var($webhook, FILTER_VALIDATE_URL)) {
+        if (filter_var($webhookUrl, FILTER_VALIDATE_URL)) {
             return true;
         }
 
-        throw new ConnectorException("the webhook is incorrect: '$webhook'");
+        throw new ConnectorException("the webhook is incorrect: '$webhookUrl'");
     }
 }
