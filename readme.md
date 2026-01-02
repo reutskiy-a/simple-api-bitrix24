@@ -317,8 +317,12 @@ $api = new ApiClientBitrix24($apiSettings, $databaseConfig);
 
 ## 5. Логирование
 
-При уровне логирования DEBUG, будут логироваться все запросы и ответы.
-При уровне логирования WARNING в логи попадут только ответы с ошибками от сервера rest api bitrix24 или исключения этого клиента.
+При уровне логирования DEBUG, будут логироваться все запросы и ответы от сервера bitrix24.
+
+При уровне логирования WARNING в логи попадут:
+- если один из ключей Batch запроса получил ошибку от сервера bitrix24
+- ответ с ошибкой от сервера bitrix24
+- исключения этого клиента
 
 ```php
 use Monolog\Formatter\LineFormatter;
@@ -697,9 +701,13 @@ All other errors result in exceptions.
 
 ## 5. Logging
 
-With log level DEBUG, all requests and responses are logged.
+At the DEBUG logging level, all requests and responses from the Bitrix24 server will be logged.
 
-With WARNING, only errors and exceptions are logged.
+At the WARNING logging level, the logs will include:
+- when any key inside a Batch request receives an error from the Bitrix24 server
+- any error response from the Bitrix24 server
+- exceptions thrown by this client
+
 ```php
 use Monolog\Formatter\LineFormatter;
 use Monolog\Handler\RotatingFileHandler;
