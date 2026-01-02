@@ -2,36 +2,28 @@
 ![Integration Tests](https://img.shields.io/badge/Integration%20Tests-Passing-brightgreen)
 ![License](https://img.shields.io/github/license/reutskiy-a/simple-api-bitrix24)
 
-> rest api client bitrix24
+> REST API клиент для облачной версии Битрикс24
 ```bash
 composer require reutskiy-a/simple-api-bitrix24
 ```
 
 lang: [Русский](#надо-ли-вам-использовать-этот-rest-api-клиент) / [English](#should-you-use-this-rest-api-client)
 
-## Надо ли вам использовать этот rest api клиент?
-### Чтобы это понять, ниже описана его цель и возможности.
-### Цель этого rest api клиента - быстрый старт, минималистичность пакета, вся минимально необходимая функциональность для разработки полноценных приложений:
-- Поддержка авторизаций:
-  - Webhook
-  - OAuth 2.0
-- Работа с базой данных для OAuth 2.0 авторизации:
-  - быстрая интеграция этого клиента с любой реляционной базой (MySQL, PostgreSQL, SQLite)
-  - быстрое создание таблицы в бд для хранения данных пользователей методом TableManager::createUsersTableIfNotExists
-  - автообновление токенов авторизации пользователей в бд, вам не надо об этом беспокоиться.
-  - возможность сохранять и использовать токены авторизации любых пользователей портала Bitrix24
-- Этот пакет даёт возможность работать с локальными приложениями, как с тиражными (одно приложение на несколько порталов)
-- Сервис установки приложения
-- Обработка лимитов на запросы к серверу rest api
-  - из коробки пакет обрабатывает ошибки от сервера "operation time limit", "query limit exceeded". Ваши запросы выполнятся гарантировано, на сколько хватит время жизни вашего приложения.
-  - есть возможность настройки обработки ошибок лимитов rest api
-- Логирование
-- Сервис батч запросов
-- На ошибки от сервера rest api bitrix24, которые клиент не обработал - выбрасывает исключения.
 
-Более детальную информацию по работе с этим rest api клиентом читайте в содержании.
+## Этот REST API клиент подойдёт тем, кому нужен быстрый старт, минимализм и вся необходимая функциональность для разработки полноценных приложений для облачной версии Битрикс24.
 
-> Если вы ранее работали с CRest, то методы call и callBatch в этом клиенте работают аналогично.
+### Что умеет:
+- авторизация через Webhook и OAuth 2.0
+- автоматическая работа с любой реляционной БД (MySQL, PostgreSQL, SQLite): быстрое создание таблицы пользователей и сохранение данных через встроенный UserRepository.
+- авто‑обновление пользовательских токенов.
+- сохранение и использование токенов любых пользователей портала, работа с их правами доступа.
+- обработка лимитов REST API — приложение не прерывает работу при ошибках Bitrix24.
+- локальные приложения могут работать, как тиражные (одно приложение - много порталов).
+- сервис установки приложений.
+- логирование.
+- знакомый подход для тех, кто работал с CRest.
+
+Более детальную информацию и примеры по работе с rest api клиентом смотрите в содержании ниже.
 
 Пример установки локального приложения:
 ![Installation-demo](https://raw.githubusercontent.com/reutskiy-a/assets/main/simple-api-bitrix24/simple_api_bitrix24_v2_local-app.gif)
@@ -401,29 +393,20 @@ $resultWithKeys = $batchService->callWithKeys([
 
 English:
 
-## Should you use this REST API client?
-### To help you decide, here’s the purpose of this package and what it provides.
-### The goal of this REST API client is to offer a fast start, a minimalistic package, and all the essential functionality required to build full‑featured Bitrix24 applications:
-- Supported authorization types:
-    - Webhook
-    - OAuth 2.0
-- Database support for OAuth 2.0 authorization:
-    - quick integration with any relational database (MySQL, PostgreSQL, SQLite)
-    - automatic creation of a users table via TableManager::createUsersTableIfNotExists
-    - automatic token refresh and persistence — you don’t need to handle token updates manually
-    - ability to store and use authorization tokens for any Bitrix24 portal users
-- Enables local applications to work like distributed (multi‑portal) apps
-- Application installation service
-- REST API rate‑limit handling:
-    - built‑in handling of “operation time limit” and “query limit exceeded” errors — your requests will be executed reliably as long as your script is running
-    - configurable rate‑limit handling
-- Logging
-- Batch request service
-- Any unhandled Bitrix24 REST API errors will result in exceptions
+## This REST API client is ideal for those who need a quick start, minimalism, and all the essential functionality for building full‑featured applications for the cloud version of Bitrix24.
 
-For more detailed information, see the table of contents below.
+### Features:
+- authorization via Webhook and OAuth 2.0
+- automatic integration with any relational database (MySQL, PostgreSQL, SQLite): fast user table creation and data persistence through the built‑in UserRepository
+- automatic refresh of user access tokens
+- storing and using tokens of any portal users, working with their access permissions
+- REST API rate‑limit handling — the application does not stop when Bitrix24 returns errors
+- local applications can operate as multi‑tenant apps (one application for many portals)
+- application installation service
+- logging
+- familiar workflow for those who have used CRest
 
-> If you’ve previously worked with CRest, the call and callBatch methods behave similarly.
+For more detailed information and usage examples, see the sections below.
 
 
 ## Table of Contents:
