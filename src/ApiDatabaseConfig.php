@@ -13,16 +13,16 @@ final class ApiDatabaseConfig
     public function __construct(
         public readonly PDO    $pdo,
         public readonly string $tableName,
-        public readonly string $userIdColumnName,               // db type: int (big_int unsigned) NOT NULL
-        public readonly string $memberIdColumnName,             // db type: string (100) NOT NULL
-        public readonly string $isAdminColumnName,              // db type: bool (1) NOT NULL DEFAULT 0
-        public readonly string $authTokenColumnName,            // db type: string (100) NOT NULL
-        public readonly string $refreshTokenColumnName,         // db type: string (100) NOT NULL
-        public readonly string $domainColumnName,               // db type: string (200) NOT NULL
-        public readonly string $clientIdColumnName,             // db type: string (100) NOT NULL
-        public readonly string $clientSecretColumnName,         // db type: string (100) NOT NULL
-        public readonly string $createdAtColumnName,            // db type: timestamp NOT NULL
-        public readonly string $updatedAtColumnName,            // db type: timestamp NOT NULL
+        public readonly string $userIdColumnName,               // column definition: int (big_int unsigned) NOT NULL
+        public readonly string $memberIdColumnName,             // column definition: string (100) NOT NULL
+        public readonly string $isAdminColumnName,              // column definition: bool (1) NOT NULL DEFAULT 0
+        public readonly string $authTokenColumnName,            // column definition: string (100) NOT NULL
+        public readonly string $refreshTokenColumnName,         // column definition: string (100) NOT NULL
+        public readonly string $domainColumnName,               // column definition: string (200) NOT NULL
+        public readonly string $clientIdColumnName,             // column definition: string (100) NOT NULL
+        public readonly string $clientSecretColumnName,         // column definition: string (100) NOT NULL
+        public readonly string $createdAtColumnName,            // column definition: timestamp NOT NULL
+        public readonly string $updatedAtColumnName,            // column definition: timestamp NOT NULL
     ) {
 
     }
@@ -32,6 +32,7 @@ final class ApiDatabaseConfig
      * Or specify your own through the constructor.
      *
      * @param PDO $pdo
+     * @param string|null $tableName
      * @return ApiDatabaseConfig
      */
     public static function build(PDO $pdo, string|null $tableName = null): ApiDatabaseConfig

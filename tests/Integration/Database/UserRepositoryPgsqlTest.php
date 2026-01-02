@@ -44,7 +44,7 @@ class UserRepositoryPgsqlTest extends BaseTestCase
         $this->assertEquals($getUser->getUserId(), $user->getUserId());
     }
 
-    public function test_update_and_delete_user()
+    public function test_update()
     {
         $user = $this->getUserObject();
         $this->repository->save($user);

@@ -14,12 +14,17 @@ class UserRepository
 {
     private ApiDatabaseConfig $apiDatabaseConfig;
     private QueryFactory $queryFactory;
+
     public function __construct(ApiDatabaseConfig $apiDatabaseConfig)
     {
         $this->apiDatabaseConfig = $apiDatabaseConfig;
         $this->queryFactory = new QueryFactory($apiDatabaseConfig->pdo->getAttribute(PDO::ATTR_DRIVER_NAME));
     }
 
+    /**
+     * @param User $user
+     * @return bool
+     */
     public function insert(User $user): bool
     {
         $insert = $this->queryFactory->newInsert();
@@ -43,6 +48,10 @@ class UserRepository
         return $stmt->execute($insert->getBindValues());
     }
 
+    /**
+     * @param User $user
+     * @return bool
+     */
     public function update(User $user): bool
     {
         $update = $this->queryFactory->newUpdate();
@@ -67,6 +76,13 @@ class UserRepository
         return $stmt->execute($update->getBindValues());
     }
 
+    /**
+     * Get a user by Bitrix24 user ID and member ID
+     *
+     * @param int $userId
+     * @param string $memberId
+     * @return User|null
+     */
     public function getUserByIdAndMemberId(int $userId, string $memberId): ?User
     {
         $select = $this->queryFactory->newSelect();
@@ -88,6 +104,12 @@ class UserRepository
         return $this->buildUserObject($result);
     }
 
+    /**
+     * Get the first user with administrator rights from the database by member ID
+     *
+     * @param string $memberId
+     * @return User|null
+     */
     public function getFirstAdminByMemberId(string $memberId): ?User
     {
         $select = $this->queryFactory->newSelect();
@@ -109,7 +131,12 @@ class UserRepository
         return $this->buildUserObject($result);
     }
 
-
+    /**
+     * Get the first user in the database by member ID, not an administrator.
+     *
+     * @param string $memberId
+     * @return User|null
+     */
     public function getFirstUserByMemberId(string $memberId): ?User
     {
         $select = $this->queryFactory->newSelect();
@@ -131,6 +158,12 @@ class UserRepository
         return $this->buildUserObject($result);
     }
 
+    /**
+     * Get all users by member ID
+     *
+     * @param string $memberId
+     * @return array
+     */
     public function getAllUsersByMemberId(string $memberId): array
     {
         $select = $this->queryFactory->newSelect();
@@ -147,6 +180,13 @@ class UserRepository
         return array_map(fn($user) => $this->buildUserObject($user), $users);
     }
 
+    /**
+     * Delete a user by Bitrix24 user ID and member ID
+     *
+     * @param int $userId
+     * @param string $memberId
+     * @return bool
+     */
     public function deleteUserByIdAndMemberId(int $userId, string $memberId): bool
     {
         $delete = $this->queryFactory->newDelete();
@@ -160,6 +200,12 @@ class UserRepository
         return $stmt->execute($delete->getBindValues());
     }
 
+    /**
+     * Delete all users in the database by member ID
+     *
+     * @param string $memberId
+     * @return bool
+     */
     public function deleteAllUsersByMemberId(string $memberId): bool
     {
         $delete = $this->queryFactory->newDelete();
@@ -172,11 +218,23 @@ class UserRepository
         return $stmt->execute($delete->getBindValues());
     }
 
+    /**
+     * Delete a user from the database
+     *
+     * @param User $user
+     * @return bool
+     */
     public function delete(User $user): bool
     {
         return $this->deleteUserByIdAndMemberId($user->getUserId(), $user->getMemberId());
     }
 
+    /**
+     * Updates the user if they already exist in the database and adds a new one if they do not exist
+     *
+     * @param User $user
+     * @return bool|string
+     */
     public function save(User $user): bool|string
     {
         if ($this->doesUserExistByIdAndMemberId($user->getUserId(), $user->getMemberId())) {
@@ -186,6 +244,13 @@ class UserRepository
         }
     }
 
+    /**
+     * Does a user exist by Bitrix24 user ID and member ID
+     *
+     * @param int $userId
+     * @param string $memberId
+     * @return bool
+     */
     public function doesUserExistByIdAndMemberId(int $userId, string $memberId): bool
     {
         $user = $this->getUserByIdAndMemberId($userId, $memberId);
@@ -197,6 +262,10 @@ class UserRepository
         return true;
     }
 
+    /**
+     * @param array $fetchedData
+     * @return User
+     */
     private function buildUserObject(array $fetchedData): User
     {
         return new User(
@@ -212,5 +281,4 @@ class UserRepository
             updatedAt: new CarbonImmutable($fetchedData[$this->apiDatabaseConfig->updatedAtColumnName])
         );
     }
-
 }

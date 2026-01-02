@@ -50,7 +50,7 @@ class QueryLimitExceededHandlerTest extends BaseTestCase
     public function test_handler_is_working_correctly_using_a_webhook(): void
     {
         $apiSettings = new ApiClientSettings(AuthType::WEBHOOK);
-        $apiSettings->setDefaultConnection(new Webhook('https://some-webhook.bitrix24.ru'))
+        $apiSettings->setDefaultCredentials(new Webhook('https://some-webhook.bitrix24.ru'))
             ->setQueryLimitExceededHandler(true, 1);
         $api = new ApiClientBitrix24($apiSettings);
 
@@ -65,7 +65,7 @@ class QueryLimitExceededHandlerTest extends BaseTestCase
         $this->expectException(QueryLimitExceededException::class);
 
         $apiSettings = new ApiClientSettings(AuthType::WEBHOOK);
-        $apiSettings->setDefaultConnection(new Webhook('https://some-webhook.bitrix24.ru'))
+        $apiSettings->setDefaultCredentials(new Webhook('https://some-webhook.bitrix24.ru'))
             ->setQueryLimitExceededHandler(false);
         $api = new ApiClientBitrix24($apiSettings);
 
@@ -77,7 +77,7 @@ class QueryLimitExceededHandlerTest extends BaseTestCase
     {
         $apiSettings = new ApiClientSettings(AuthType::TOKEN);
 
-        $apiSettings->setDefaultConnection($this->user)
+        $apiSettings->setDefaultCredentials($this->user)
             ->setQueryLimitExceededHandler(true, 1);
         $api = new ApiClientBitrix24($apiSettings, $this->databaseConfig);
 
@@ -92,7 +92,7 @@ class QueryLimitExceededHandlerTest extends BaseTestCase
         $this->expectException(QueryLimitExceededException::class);
 
         $apiSettings = new ApiClientSettings(AuthType::TOKEN);
-        $apiSettings->setDefaultConnection($this->user)
+        $apiSettings->setDefaultCredentials($this->user)
             ->setQueryLimitExceededHandler(false);
         $api = new ApiClientBitrix24($apiSettings, $this->databaseConfig);
 

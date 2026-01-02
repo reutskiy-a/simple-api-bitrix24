@@ -34,7 +34,7 @@ class DefaultErrorHandlerTest extends BaseTestCase
     public function test_throws_default_exception_using_a_webhook(): void
     {
         $apiSettings = new ApiClientSettings(AuthType::WEBHOOK);
-        $apiSettings->setDefaultConnection(new Webhook('https://some-webhook.bitrix24.ru'));
+        $apiSettings->setDefaultCredentials(new Webhook('https://some-webhook.bitrix24.ru'));
         $api = new ApiClientBitrix24($apiSettings);
 
         $this->setMockedHttpClientInApiClient($this->mockedGuzzleClient, $api);
@@ -55,7 +55,7 @@ class DefaultErrorHandlerTest extends BaseTestCase
 
         $apiSettings = new ApiClientSettings(AuthType::TOKEN);
 
-        $apiSettings->setDefaultConnection($user);
+        $apiSettings->setDefaultCredentials($user);
         $api = new ApiClientBitrix24($apiSettings, $databaseConfig);
 
         $this->setMockedHttpClientInApiClient($this->mockedGuzzleClient, $api);

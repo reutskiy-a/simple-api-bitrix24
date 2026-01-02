@@ -42,7 +42,7 @@ class EmptyResponseHandlerTest extends BaseTestCase
     public function test_handler_is_working_correctly_using_a_webhook(): void
     {
         $apiSettings = new ApiClientSettings(AuthType::WEBHOOK);
-        $apiSettings->setDefaultConnection(new Webhook('https://some-webhook.bitrix24.ru'));
+        $apiSettings->setDefaultCredentials(new Webhook('https://some-webhook.bitrix24.ru'));
         $api = new ApiClientBitrix24($apiSettings);
         $this->setUsleepTimeForHandler(1, $api);
 
@@ -58,7 +58,7 @@ class EmptyResponseHandlerTest extends BaseTestCase
         $this->expectException(EmptyResponseException::class);
 
         $apiSettings = new ApiClientSettings(AuthType::WEBHOOK);
-        $apiSettings->setDefaultConnection(new Webhook('https://some-webhook.bitrix24.ru'));
+        $apiSettings->setDefaultCredentials(new Webhook('https://some-webhook.bitrix24.ru'));
         $api = new ApiClientBitrix24($apiSettings);
         $this->setUsleepTimeForHandler(1, $api);
 
@@ -71,7 +71,7 @@ class EmptyResponseHandlerTest extends BaseTestCase
     {
         $apiSettings = new ApiClientSettings(AuthType::TOKEN);
 
-        $apiSettings->setDefaultConnection($this->user);
+        $apiSettings->setDefaultCredentials($this->user);
         $api = new ApiClientBitrix24($apiSettings, $this->databaseConfig);
         $this->setUsleepTimeForHandler(1, $api);
 
@@ -87,7 +87,7 @@ class EmptyResponseHandlerTest extends BaseTestCase
         $this->expectException(EmptyResponseException::class);
 
         $apiSettings = new ApiClientSettings(AuthType::TOKEN);
-        $apiSettings->setDefaultConnection($this->user);
+        $apiSettings->setDefaultCredentials($this->user);
         $api = new ApiClientBitrix24($apiSettings, $this->databaseConfig);
         $this->setUsleepTimeForHandler(1, $api);
 

@@ -18,7 +18,7 @@ class ConnectorFactoryTest extends BaseTestCase
     public function test_factory_returns_webhook_connector():void
     {
         $apiSettings = new ApiClientSettings(AuthType::WEBHOOK);
-        $apiSettings->setDefaultConnection(new Webhook('https://webhook.here'));
+        $apiSettings->setDefaultCredentials(new Webhook('https://webhook.here'));
         $connector = ConnectorFactory::create($apiSettings);
 
         $this->assertInstanceOf(WebhookConnector::class, $connector);

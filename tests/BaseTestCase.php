@@ -20,9 +20,9 @@ use SimpleApiBitrix24\DatabaseCore\Models\User;
 
 abstract class BaseTestCase extends TestCase
 {
-    public function __construct(?string $name = null, array $data = [], string $dataName = '')
+    public function __construct(string $name)
     {
-        parent::__construct($name, $data, $dataName);
+        parent::__construct($name);
 
         $dotenv = Dotenv::createImmutable(__DIR__ . '/', '.env.testing');
         $dotenv->load();

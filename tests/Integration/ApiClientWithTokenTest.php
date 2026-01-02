@@ -29,7 +29,7 @@ class ApiClientWithTokenTest extends BaseTestCase
         $this->api = new ApiClientBitrix24($apiSettings, $dbSettings);
         $repository = new UserRepository($dbSettings);
         $user = $repository->getFirstAdminByMemberId($_ENV['MEMBER_ID']);
-        $this->api->connectTo($user);
+        $this->api->setCredentials($user);
     }
 
     public function test_request()
@@ -74,7 +74,7 @@ class ApiClientWithTokenTest extends BaseTestCase
 
         $this->expectException(ConnectorException::class);
         $this->expectExceptionMessage("User not found in the database or User object was not used with the
-                methods ApiClientBitrix24::connectTo or ApiClientSettings::setDefaultConnection");
+                methods ApiClientBitrix24::setCredentials or ApiClientSettings::setDefaultCredentials");
 
         $api->call('test');
     }

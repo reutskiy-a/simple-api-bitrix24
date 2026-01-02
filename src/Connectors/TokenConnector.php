@@ -83,10 +83,9 @@ class TokenConnector implements ConnectorInterface
         if ($user === null) {
             throw new ConnectorException(
                 'User not found in the database or User object was not used with the
-                methods ApiClientBitrix24::connectTo or ApiClientSettings::setDefaultConnection');
+                methods ApiClientBitrix24::setCredentials or ApiClientSettings::setDefaultCredentials');
         }
 
         return true;
     }
-
 }

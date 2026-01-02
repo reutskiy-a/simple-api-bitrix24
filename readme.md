@@ -2,292 +2,270 @@
 ![Integration Tests](https://img.shields.io/badge/Integration%20Tests-Passing-brightgreen)
 ![License](https://img.shields.io/github/license/reutskiy-a/simple-api-bitrix24)
 
-> Simple REST API Bitrix24 client: OAuth 2.0, Webhook, flexible DB support, app installer, REST API Limit Handling Service
-
-## Клиент для REST API Bitrix24:
-### OAuth 2.0 (с автообновлением токенов), Webhook, поддержка всех популярных реляционных БД, менеджер установки локальных/тиражных приложений. Установка одного локального приложения на несколько порталов.
-### Встроенная обработка лимитов REST API
-
-## Installation
+> rest api client bitrix24
 ```bash
 composer require reutskiy-a/simple-api-bitrix24
 ```
 
-### LANGUAGE:
-> [Русский](#русский)
-> 
-> [English](#english)
----
+lang: [Русский](#надо-ли-вам-использовать-этот-rest-api-клиент) / [English](#should-you-use-this-rest-api-client)
 
-Local/distributed app installation example:
+## Надо ли вам использовать этот rest api клиент?
+### Чтобы это понять, ниже описана его цель и возможности.
+### Цель этого rest api клиента - быстрый старт, минималистичность пакета, вся минимально необходимая функциональность для разработки полноценных приложений:
+- Поддержка авторизаций:
+  - Webhook
+  - OAuth 2.0
+- Работа с базой данных для OAuth 2.0 авторизации:
+  - быстрая интеграция этого клиента с любой реляционной базой (MySQL, PostgreSQL, SQLite)
+  - быстрое создание таблицы в бд для хранения данных пользователей методом TableManager::createUsersTableIfNotExists
+  - автообновление токенов авторизации пользователей в бд, вам не надо об этом беспокоиться.
+  - возможность сохранять и использовать токены авторизации любых пользователей портала Bitrix24
+- Этот пакет даёт возможность работать с локальными приложениями, как с тиражными (одно приложение на несколько порталов)
+- Сервис установки приложения
+- Обработка лимитов на запросы к серверу rest api
+  - из коробки пакет обрабатывает ошибки от сервера "operation time limit", "query limit exceeded". Ваши запросы выполнятся гарантировано, на сколько хватит время жизни вашего приложения.
+  - есть возможность настройки обработки ошибок лимитов rest api
+- Логирование
+- Сервис батч запросов
+- На ошибки от сервера rest api bitrix24, которые клиент не обработал - выбрасывает исключения.
 
-![Installation-demo](https://raw.githubusercontent.com/reutskiy-a/assets/main/api-client-bitrix24-local-app-installation.gif)
+Более детальную информацию по работе с этим rest api клиентом читайте в содержании.
 
-### Русский:
+> Если вы ранее работали с CRest, то методы call и callBatch в этом клиенте работают аналогично.
+
+Пример установки локального приложения:
+![Installation-demo](https://raw.githubusercontent.com/reutskiy-a/assets/main/simple-api-bitrix24/simple_api_bitrix24_v2_local-app.gif)
 
 ## Содержание:
-1. [Быстрый старт: Webhook соединение](#1-быстрый-старт-webhook-соединение)
+1. [Webhook авторизация - быстрый старт](#1-webhook-авторизация---быстрый-старт)
 
-2. [Соединение OAuth 2.0 (Локальное или Тиражное приложение)](#2-соединение-oauth-20-локальное-или-тиражное-приложение)
+2. [OAuth 2.0 авторизация - быстрый старт](#2-oauth-20-авторизация---быстрый-старт)
+    
+   2.1 [Подготовка соединения с базой данных и создание таблицы пользователей](#21-подготовка-соединения-с-базой-данных-и-создание-таблицы-пользователей)
    
-    2.1. [Подготовка базы данных для хранения токенов](#21-подготовка-базы-данных-для-хранения-токенов)
+   2.2 [Создание объекта rest api клиента с OAuth 2.0 авторизацией](#22-создание-объекта-rest-api-клиента-с-oauth-20-авторизацией)
+          
+   2.3 [Установка приложения и сохранение данных пользователя в БД](#23-установка-приложения-и-сохранение-данных-пользователя-в-бд)
 
-    2.2. [Создание объекта соединения OAuth 2.0](#22-создание-объекта-соединения-oauth-20)
-         
-    2.3. [Установка приложения](#23-установка-приложения)
+3. [Подробней о работе с rest api клиентом](#3-подробней-о-работе-с-rest-api-клиентом)
+    
+   3.1 [Установка авторизации для rest api клиента по умолчанию](#31-установка-авторизации-для-rest-api-клиента-по-умолчанию)
+       
+   3.2 [Смена авторизации rest api клиента / работа с разными порталами или пользователями одновременно](#32-смена-авторизации-rest-api-клиента--работа-с-разными-порталами-или-пользователями-одновременно)
+          
+   3.3 [Сохранение данных пользователя в бд](#33-сохранение-данных-пользователя-в-бд)
+             
+   3.4 [Работа с пользователями через UserRepository](#34-работа-с-пользователями-через-userrepository)
 
-3. [Смена соединения или клонирование объекта соединения](#3-смена-соединения-или-клонирование-объекта-соединения)
+4. [Настройка обработки лимитов rest api bitrix24](#4-настройка-обработки-лимитов-rest-api-bitrix24)
 
-4. [Логирование](#4-логирование)
+5. [Логирование](#5-логирование)
+
+6. [Batch](#6-batch)
    
-    4.1. [Debug логирование](#41-debug-логирование)
-   
-    4.2. [Рекомендуемый уровень логирования](#42-рекомендуемый-уровень-логирования)
+   6.1 [Обычный batch запрос](#61-обычный-batch-запрос)
 
-5. [Пакетные запросы](#5-пакетные-запросы)
-
-    5.1 [Стандартный пакетный запрос](#51-стандартный-пакетный-запрос)
-
-    5.2 [Батч сервис](#52-батч-сервис)
-   
+   6.2 [Batch сервис](#62-batch-сервис)
 
 
 
-6. [Встроенный сервис обработки лимитов REST API](#6-встроенный-сервис-обработки-лимитов-rest-api)
-    
-
-
-## 1. Быстрый старт Webhook соединение
-```php
-    use SimpleApiBitrix24\ApiClientSettings;
-    use SimpleApiBitrix24\ApiClientBitrix24;
-
-    $apiSettings = new ApiClientSettings();
-    $apiSettings->setWebhookAuthEnabled(true)
-                ->setDefaultConnection('https://portal.bitrix24.ru/rest/1/cj03r****1wbeg/');
-
-    $api = new ApiClientBitrix24($apiSettings);
-    
-    $result = $api->call('crm.deal.get', ['ID' => 1]);
-```
-
-
-
-## 2. Соединение OAuth 2.0 (Локальное или Тиражное приложение)
-> Вы можете устанавливать одно и тоже локальное приложение на разные порталы. 
-> Только следите за корректностью client_id и client_secret при установке, 
-> иначе токены не обновятся, когда их время жизни закончится, и приложение выбросит исключение.
-
-
-
-### 2.1 Подготовка базы данных для хранения токенов
-> Используйте любую удобную базу данных:
-- PostgreSQL
-- MySQL
-- SQLite
-- SQLServer
-
-Создайте таблицу в базе данных. Пример запроса для MySQL:
-```sql
-    CREATE TABLE api_tokens_bitrix24(
-    id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-    member_id VARCHAR(255) UNIQUE NOT NULL,
-    access_token VARCHAR(255) NOT NULL,
-    expires_in VARCHAR(255) NOT NULL,
-    application_token VARCHAR(255) NOT NULL,
-    refresh_token VARCHAR(255) NOT NULL,
-    domain VARCHAR(255) NOT NULL,
-    client_endpoint VARCHAR(255) NOT NULL,
-    client_id VARCHAR(255) NOT NULL,
-    client_secret VARCHAR(255) NOT NULL
-    );
-```
-
-
-
-### 2.2 Создание объекта соединения OAuth 2.0
+## 1. Webhook авторизация - быстрый старт
 
 ```php
-    use SimpleApiBitrix24\ApiDatabaseConfig;
-    use SimpleApiBitrix24\ApiClientSettings;
-    use SimpleApiBitrix24\ApiClientBitrix24;
+use SimpleApiBitrix24\ApiClientBitrix24;
+use SimpleApiBitrix24\ApiClientSettings;
+use SimpleApiBitrix24\Connectors\Models\Webhook;
+use SimpleApiBitrix24\Enums\AuthType;
 
-    $pdo = new PDO('mysql:host=172.17.0.1;port=3306;dbname=bitrix24', 'root', 'password'); // Ваши настройки подключения к базе
+$apiSettings = new ApiClientSettings(AuthType::WEBHOOK);
+$apiSettings->setDefaultCredentials(new Webhook('https://test.bitrix24.ru/rest/1/b1hw1*****k12t/'));
 
-    $databaseConfig = new ApiDatabaseConfig(
-        pdo: $pdo,
-        tableName: 'api_tokens_bitrix24',
-        primaryKeyColumnName: 'id',
-        memberIdColumnName: 'member_id',
-        accessTokenColumnName: 'access_token',
-        expiresInColumnName: 'expires_in',
-        applicationTokenColumnName: 'application_token',
-        refreshTokenColumnName: 'refresh_token',
-        domainColumnName: 'domain',
-        clientEndpointColumnName: 'client_endpoint',
-        clientIdColumnName: 'client_id',
-        clientSecretColumnName: 'client_secret'
-    );
+$api = new ApiClientBitrix24($apiSettings);
 
-    $apiSettings = new ApiClientSettings();
-    $apiSettings->setTokenAuthEnabled(true)
-                ->setDefaultConnection('your_member_id');
-
-    $api = new ApiClientBitrix24($apiSettings, $databaseConfig);
-
-    $result = $api->call('crm.deal.get', ['ID' => 1]);
-```
-
-Если надо динамически устанавливать соединение к порталу на входящий $_REQUEST['member_id'], то делайте так:
-```php
-    // ...
-    
-    $apiSettings = new ApiClientSettings();
-    $apiSettings->setTokenAuthEnabled(true);
-    
-    $api = new ApiClientBitrix24($apiSettings, $databaseConfig);
-    $api->connectTo($_REQUEST['member_id']);
-    
-    $result = $api->call('crm.deal.get', ['ID' => 1]);
+print_r($api->call('crm.deals.get', ['ID' => 2]));
 ```
 
 
-### 2.3 Установка приложения
+## 2. OAuth 2.0 авторизация - быстрый старт
+
+### 2.1 Подготовка соединения с базой данных и создание таблицы пользователей
+> Используйте любую удобную базу данных: MySQL, PostgreSQL, SQLite.
 
 ```php
-    use SimpleApiBitrix24\Services\Installation\InstallationService;
-    
-    // старт установки (добавление пользователя в базу данных)
-    $installationService = new InstallationService();
-    $installationService->startInstallation(
-        'local.67c9b****83.1668***79',                              // client id
-        '7KriLM5****T6tCgVSqUj2ILZFms5*****keBzYbzqso',             // client secret
-        $databaseConfig,                                            // SimpleApiBitrix24\ApiDatabaseConfig, пример создания объекта выше
-        $_REQUEST
-    );
-    
-    // тут логика установки приложения, если требуется.
-    $api->connectTo($_REQUEST['member_id']);                        // SimpleApiBitrix24\ApiClientBitrix24, пример создания объекта выше 
-    $result = $api->call('scope');
+use PDO;
+use SimpleApiBitrix24\ApiDatabaseConfig;
+use SimpleApiBitrix24\DatabaseCore\TableManager;
 
-    // завершение установки
-    $installationService->finishInstallation();                     // перезагрузка страницы на index
+// Создаём объект PDO.
+$pdo = new PDO('mysql:host=localhost;port=3306;dbname=test', 'root', 'password');
+
+// Создаём объект описывающий схему будущей таблицы.
+// Если вам нужно указать свои названия колонок и самой таблицы, то задайте их через ApiDatabaseConfig::__construct();
+$databaseConfig = ApiDatabaseConfig::build($pdo);
+
+// Создаём таблицу в базе, если она там отсутствует.
+$tableManager = new TableManager($databaseConfig);
+$tableManager->createUsersTableIfNotExists();
 ```
 
-
-## 3. Смена соединения или клонирование объекта соединения
-
-Смена/установка соединения
-```php
-    $api->connectTo('member_id__or__webhook_url');
-```
-Клонирование объекта соединения, если нужно работать одновременно с разными порталами Битрикс24.
-```php
-    $secondApi = clone $firstApi;                                   // объект SimpleApiBitrix24\ApiClientBitrix24
-    $secondApi->connectTo('new_member_id__or__webhook_url');        // получаем второй объект с соединением к другому порталу
-```
-
-
-
-## 4. Логирование
-
-### 4.1 Debug логирование
-При уровне логирования DEBUG, будут логироваться все запросы и ответы.
+### 2.2 Создание объекта rest api клиента с OAuth 2.0 авторизацией
 
 ```php
-    use Monolog\Formatter\LineFormatter;
-    use Monolog\Handler\RotatingFileHandler;
-    use Monolog\Logger;
+use PDO;
+use SimpleApiBitrix24\ApiClientBitrix24;
+use SimpleApiBitrix24\ApiClientSettings;
+use SimpleApiBitrix24\ApiDatabaseConfig;
+use SimpleApiBitrix24\DatabaseCore\UserRepository;
+use SimpleApiBitrix24\Enums\AuthType;
 
-    $logger = new Logger('api-b24');
-        
-    $handler = new RotatingFileHandler(
-        '/var/www/poject/storage/logs/api-b24.log',                     // ваша путь для логов
-        5,
-    Logger::DEBUG
-    );
-    
-    $formatter = new LineFormatter(
-        "[%datetime%] %level_name%: %message% %context%\n",
-        'Y-m-d H:i:s',
-        true
-    );
-    $formatter->setJsonPrettyPrint(true);
-    $handler->setFormatter($formatter);
-    $logger->pushHandler($handler);
+$pdo = new PDO('mysql:host=localhost;port=3306;dbname=test', 'root', 'password');
+$databaseConfig = ApiDatabaseConfig::build($pdo);   // или задайте свою схему таблицы через ApiDatabaseConfig::__construct()
 
-    $api = new ApiClientBitrix24($apiSettings, null, $logger);          // SimpleApiBitrix24\ApiClientBitrix24, пример создания объекта выше
+// Создаём объект пользователя, авторизацию которого будем использовать.
+$repository = new UserRepository($databaseConfig);
+$user = $repository->getUserByIdAndMemberId(1, 'bitrix24_member_id');
+
+// создаём объект настроек rest api клиента и зададим в этом примере авторизацию по умолчанию.
+// так же авторизацию можно установить или изменить методом ApiClientBitrix24::setCredentials
+$apiSettings = new ApiClientSettings(AuthType::TOKEN);
+$apiSettings->setDefaultCredentials($user);
+
+// создаём объект rest api клиента
+$api = new ApiClientBitrix24($apiSettings, $databaseConfig);
+
+print_r($api->call('crm.deals.get', ['ID' => 2]));
 ```
 
-### 4.2 Рекомендуемый уровень логирования
-Рекомендуемый уровень логирования WARNING. 
-В логи попадут только ответы сервера Bitrix24 с ошибками, или исключения этого пакета SimpleApiBitrix24.
-```php
-    // ...
-    
-    $handler = new RotatingFileHandler(
-        '/var/www/poject/storage/logs/api-b24.log',                     // ваша путь для логов
-        5,
-    Logger::WARNING
-    );
-    
-    // ...
-
-```
-
-## 5. Пакетные запросы
-
-### 5.1 Стандартный пакетный запрос
-
-> В один пакетный запрос можно завернуть до 50 запросов.
-> 
-> https://apidocs.bitrix24.ru/api-reference/how-to-call-rest-api/batch.html
-
+### 2.3 Установка приложения и сохранение данных пользователя в БД
 
 ```php
-    $result = $api->callBatch([
-        [
-            'method' => 'crm.deal.get',
-            'params' => ['id' => 1]
-        ],
-        [
-            'method' => 'tasks.deal.get',
-            'params' => ['id' => 2]
-        ],
-    ]);
+use PDO;
+use SimpleApiBitrix24\ApiClientBitrix24;
+use SimpleApiBitrix24\ApiClientSettings;
+use SimpleApiBitrix24\ApiDatabaseConfig;
+use SimpleApiBitrix24\DatabaseCore\UserRepository;
+use SimpleApiBitrix24\Enums\AuthType;
+use SimpleApiBitrix24\Services\Installation\InstallationService;
+
+$pdo = new PDO('mysql:host=localhost;port=3306;dbname=test', 'root', 'password');
+$databaseConfig = ApiDatabaseConfig::build($pdo);   // или задайте свою схему таблицы через ApiDatabaseConfig::__construct()
+
+$apiSettings = new ApiClientSettings(AuthType::TOKEN);
+$api = new ApiClientBitrix24($apiSettings, $databaseConfig);
+
+// сохраняем данные пользователя в базу
+$user = InstallationService::createUserFromProfileAndSave(
+    $databaseConfig,
+    'local.693c2b5c42e7c3.81926786',
+    'fDlCI34BZbbWv31iNm7H1jpwmu5py9vMyMkkVzQ3IC3WQdPQC4',
+    $_REQUEST['member_id'],
+    $_REQUEST['AUTH_ID'],
+    $_REQUEST['REFRESH_ID'],
+    $_REQUEST['DOMAIN']
+);
+
+// Тут ваша логика установки приложения
+$api->setCredentials($user); // устанавливаем авторизацию для rest api клиента
+print_r($api->call('scope'));
+
+// Вызываем метод завершения установки приложения
+InstallationService::finishInstallation();
 ```
 
-### 5.2 Батч сервис
+## 3. Подробней о работе с rest api клиентом
 
-> SimpleApiBitrix24\Services\Batch
-
-Получение всех элементов сущности. Работает только с методами списочного типа.
+### 3.1 Установка авторизации для rest api клиента по умолчанию
 
 ```php
-    use SimpleApiBitrix24\Services\Batch;
-    
-    $batchService = new Batch($api);                   // $api объект SimpleApiBitrix24\ApiClientBitrix24
-    $tasks = $batchService->getAll('tasks.task.list', ['filter' => ['STATUS' => 5]]);
+use SimpleApiBitrix24\ApiClientSettings;
+
+$apiSettings = new ApiClientSettings(AuthType::TOKEN);
+$apiSettings->setDefaultCredentials($user);
 ```
 
-Получение результата с учетом названий переданных ключей. Лимит: 50 упакованных запросов за один вызов.
+### 3.2 Смена авторизации rest api клиента / работа с разными порталами или пользователями одновременно
 
 ```php
-    use SimpleApiBitrix24\Services\Batch;
-    
-    $batchService = new Batch($api);                   // $api объект SimpleApiBitrix24\ApiClientBitrix24
-    $batchService->callWithKeys([
-        'scope_response' => ['method' => 'scope', 'params' => []],
-        'deal_list_response' => ['method' => 'crm.deal.list', 'params' => ['select' => ['ID', 'TITLE']]],
-    ]);
+use PDO;
+use SimpleApiBitrix24\ApiClientBitrix24;
+use SimpleApiBitrix24\ApiClientSettings;
+use SimpleApiBitrix24\ApiDatabaseConfig;
+use SimpleApiBitrix24\DatabaseCore\UserRepository;
+use SimpleApiBitrix24\Enums\AuthType;
+use SimpleApiBitrix24\Services\Installation\InstallationService;
+
+$pdo = new PDO('mysql:host=localhost;port=3306;dbname=test', 'root', 'password');
+$databaseConfig = ApiDatabaseConfig::build($pdo);   // или задайте свою схему таблицы через ApiDatabaseConfig::__construct()
+$apiSettings = new ApiClientSettings(AuthType::TOKEN);
+
+// Пользователь №1
+$repository = new UserRepository($databaseConfig);
+$user_1 = $repository->getUserByIdAndMemberId(1, 'bitrix24_member_id_1');
+
+$apiClient_1 = new ApiClientBitrix24($apiSettings, $databaseConfig);
+$apiClient_1->setCredentials($user_1);
+
+// Пользователь №2
+$user_2 = $repository->getFirstAdminByMemberId('bitrix24_member_id_2');
+
+$apiClient_2 = clone $apiClient_1;
+$apiClient_2->setCredentials($user_2);
+
+// далее можем работать с разными независимыми друг от друга объектами rest api клиента
+print_r($apiClient_1->call('profile'));
+print_r($apiClient_2->call('profile'));
 ```
 
-### 6. Встроенный сервис обработки лимитов REST API
-> Подробней о лимитах rest api смотрите в официальной документации
-> 
+### 3.3 Сохранение данных пользователя в бд
+
+Будьте внимательны передавая client_id и client_secret в методе InstallationService::createUserFromProfileAndSave,
+они будут записаны в БД для каждого пользователя отдельно,
+что позволяет работать локальным приложениям, как тиражным (одно приложение на несколько порталов).
+Если вы укажете client_id и client_secret не верно для конкретного пользователя, то его токены авторизации не обновятся 
+и rest api клиенты выбросит исключение.
+```php
+use SimpleApiBitrix24\Services\Installation\InstallationService;
+
+// метод добавляет или обновляет данные пользователя в базе
+InstallationService::createUserFromProfileAndSave(
+    $databaseConfig,
+    'local.693c2b5c42e7c3.81926786',
+    'fDlCI34BZbbWv31iNm7H1jpwmu5py9vMyMkkVzQ3IC3WQdPQC4',
+    $_REQUEST['member_id'],
+    $_REQUEST['AUTH_ID'],
+    $_REQUEST['REFRESH_ID'],
+    $_REQUEST['DOMAIN']
+);
+```
+
+### 3.4 Работа с пользователями через UserRepository
+
+```php
+use PDO;
+use SimpleApiBitrix24\ApiClientBitrix24;
+use SimpleApiBitrix24\DatabaseCore\UserRepository;
+
+$pdo = new PDO('mysql:host=localhost;port=3306;dbname=test', 'root', 'password');
+$databaseConfig = ApiDatabaseConfig::build($pdo);   // или задайте свою схему таблицы через ApiDatabaseConfig::__construct()
+
+// Все методы и описание смотрите в реализации репозитория
+$repository = new UserRepository($databaseConfig);
+
+$user = $repository->getFirstUserByMemberId('member_id');
+$user = $repository->getFirstAdminByMemberId('member_id');
+
+$users = $repository->getAllUsersByMemberId('member_id');
+
+$repository->delete($user);
+```
+
+## 4. Настройка обработки лимитов rest api Bitrix24
+
+> Подробнее о лимитах rest api смотрите в официальной документации
+>
 > https://apidocs.bitrix24.ru/limits.html
 
-Этот пакет может обрабатывать ответы об ошибках лимитов REST API:
+Этот rest api клиент может обрабатывать ответы об ошибках лимитов REST API:
 
 Пример обрабатываемых ошибок от сервера REST API:
 ```json
@@ -303,287 +281,375 @@ Local/distributed app installation example:
 }
 ```
 
-Включается обработка ошибок конфигурацией объекта SimpleApiBitrix24\ApiClientSettings
+По умолчанию обработка выше перечисленных ошибок включена в этом rest api клиенте.
+
+Как работает обработка ошибок - при получении ответа с одной из ошибок API Client будет делать повторный запрос через заданный интервал времени,
+не останавливая работу скрипта, делать это будет постоянно пока не завершится выполнение скрипта или
+не истечёт время жизни приложения.
+
+```php
+use PDO;
+use SimpleApiBitrix24\ApiClientBitrix24;
+use SimpleApiBitrix24\ApiClientSettings;
+use SimpleApiBitrix24\ApiDatabaseConfig;
+use SimpleApiBitrix24\Enums\AuthType;
+
+$pdo = new PDO('mysql:host=localhost;port=3306;dbname=test', 'root', 'password');
+$databaseConfig = ApiDatabaseConfig::build($pdo);   // или задайте свою схему таблицы через ApiDatabaseConfig::__construct()
+
+// по умолчанию обработка лимитов всегда включена при создании объекта ApiClientSettings;
+// вы можете отключить или задать свой интервал для повторного запроса в микросекундах
+$apiSettings = new ApiClientSettings(AuthType::TOKEN);
+$apiSettings
+    ->setOperationTimeLimitHandler(true, 5000000)
+    ->setQueryLimitExceededHandler(true, 1000000);
+
+$api = new ApiClientBitrix24($apiSettings, $databaseConfig);
+```
+
+Так же rest api клиент обрабатывает по умолчанию ошибки:
+- Крайне редко наблюдались пустые ответы от сервера rest api bitrix24, в случае такой ситуации клиент сделает повторный запрос.
+- Обновление токенов авторизации и сохранение новых в базе данных, в случае получения ошибки об истечении срока жизни токенов.
+После запрос повторится.
+
+В остальных случаях клиент выбрасывает исключения на другие ответы с ошибками от сервера rest api bitrix24.
+
+
+## 5. Логирование
+
+При уровне логирования DEBUG, будут логироваться все запросы и ответы.
+При уровне логирования WARNING в логи попадут только ответы с ошибками от сервера rest api bitrix24 или исключения этого клиента.
+
+```php
+use Monolog\Formatter\LineFormatter;
+use Monolog\Handler\RotatingFileHandler;
+use Monolog\Logger;
+use PDO;
+use SimpleApiBitrix24\ApiClientBitrix24;
+use SimpleApiBitrix24\ApiClientSettings;
+use SimpleApiBitrix24\ApiDatabaseConfig;
+use SimpleApiBitrix24\Enums\AuthType;
+
+$pdo = new PDO('mysql:host=localhost;port=3306;dbname=test', 'root', 'password');
+$databaseConfig = ApiDatabaseConfig::build($pdo);   // или задайте свою схему таблицы через ApiDatabaseConfig::__construct()
+$apiSettings = new ApiClientSettings(AuthType::TOKEN);
+
+$logger = new Logger('api-b24');
+$handler = new RotatingFileHandler(
+    storage_path('logs/rest-api-bitrix24.log'),
+    15,
+    Logger::DEBUG
+);
+$formatter = new LineFormatter(
+    "[%datetime%] %level_name%: %message% %context%\n",
+    'Y-m-d H:i:s',
+    true
+);
+$formatter->setJsonPrettyPrint(true);
+$handler->setFormatter($formatter);
+$logger->pushHandler($handler);
+
+$api = new ApiClientBitrix24($apiSettings, $databaseConfig, $logger);
+```
+
+## 6. Batch
+
+### 6.1 Обычный batch запрос
+
+```php
+use SimpleApiBitrix24\ApiClientBitrix24;
+
+//...
+
+$api = new ApiClientBitrix24($apiSettings, $databaseConfig);
+
+$result = $api->callBatch([
+    ['method' => 'scope', 'params' => []],
+    ['method' => 'crm.deal.list', 'params' => ['select' => ['ID', 'TITLE']]],
+]);
+
+print_r($result);
+```
+
+### 6.2 Batch сервис
+
+```php
+use SimpleApiBitrix24\ApiClientBitrix24;
+use SimpleApiBitrix24\Services\Batch;
+
+// ...
+
+$api = new ApiClientBitrix24($apiSettings, $databaseConfig);
+
+$batchService = new Batch($api);
+
+// получаем все элементы сущности, работает только со списочными методами
+$getAllResult = $batchService->getAll('tasks.task.list', ['filter' => ['STATUS' => 5]]);
+
+// вернёт ответы предварительно отсортировав их по тем же ключам массива, которые вы укажете в аргументе метода.
+$resultWithKeys = $batchService->callWithKeys([
+    'scope_response' => ['method' => 'scope', 'params' => []],
+    'deal_list_response' => ['method' => 'crm.deal.list', 'params' => ['select' => ['ID', 'TITLE']]],
+])
+```
+
+
+
+English:
+
+## Should you use this REST API client?
+### To help you decide, here’s the purpose of this package and what it provides.
+### The goal of this REST API client is to offer a fast start, a minimalistic package, and all the essential functionality required to build full‑featured Bitrix24 applications:
+- Supported authorization types:
+    - Webhook
+    - OAuth 2.0
+- Database support for OAuth 2.0 authorization:
+    - quick integration with any relational database (MySQL, PostgreSQL, SQLite)
+    - automatic creation of a users table via TableManager::createUsersTableIfNotExists
+    - automatic token refresh and persistence — you don’t need to handle token updates manually
+    - ability to store and use authorization tokens for any Bitrix24 portal users
+- Enables local applications to work like distributed (multi‑portal) apps
+- Application installation service
+- REST API rate‑limit handling:
+    - built‑in handling of “operation time limit” and “query limit exceeded” errors — your requests will be executed reliably as long as your script is running
+    - configurable rate‑limit handling
+- Logging
+- Batch request service
+- Any unhandled Bitrix24 REST API errors will result in exceptions
+
+For more detailed information, see the table of contents below.
+
+> If you’ve previously worked with CRest, the call and callBatch methods behave similarly.
+
+
+## Table of Contents:
+1. [Webhook Authorization — Quick Start](#1-webhook-authorization--quick-start)
+
+2. [OAuth 2.0 Authorization — Quick Start](#2-oauth-20-authorization--quick-start)
+
+   2.1 [Preparing the database connection and creating the users table](#21-preparing-the-database-connection-and-creating-the-users-table)
+
+   2.2 [Creating a REST API client with OAuth 2.0 authorization](#22-creating-a-rest-api-client-with-oauth-20-authorization)
+
+   2.3 [Application installation and saving user data to the database](#23-application-installation-and-saving-user-data-to-the-database)
+
+3. [Detailed usage of the REST API client](#3-detailed-usage-of-the-rest-api-client)
+
+   3.1 [Setting default authorization for the REST API client](#31-setting-default-authorization-for-the-rest-api-client)
+
+   3.2 [Switching authorization / working with multiple portals or users simultaneously](#32-switching-authorization--working-with-multiple-portals-or-users-simultaneously)
+
+   3.3 [Saving user data to the database](#33-saving-user-data-to-the-database)
+
+   3.4 [Working with users via UserRepository](#34-working-with-users-via-userrepository)
+
+4. [Configuring Bitrix24 REST API rate‑limit handling](#4-configuring-bitrix24-rest-api-ratelimit-handling)
+
+5. [Logging](#5-logging)
+
+6. [Batch](#6-batch)
+
+   6.1 [Basic batch request](#61-basic-batch-request)
+
+   6.2 [Batch service](#62-batch-service)
+
+
+## 1. Webhook Authorization — Quick Start
+
+```php
+use SimpleApiBitrix24\ApiClientBitrix24;
+use SimpleApiBitrix24\ApiClientSettings;
+use SimpleApiBitrix24\Connectors\Models\Webhook;
+use SimpleApiBitrix24\Enums\AuthType;
+
+$apiSettings = new ApiClientSettings(AuthType::WEBHOOK);
+$apiSettings->setDefaultCredentials(new Webhook('https://test.bitrix24.ru/rest/1/b1hw1*****k12t/'));
+
+$api = new ApiClientBitrix24($apiSettings);
+
+print_r($api->call('crm.deals.get', ['ID' => 2]));
+```
+
+
+## 2. OAuth 2.0 Authorization — Quick Start
+
+### 2.1 Preparing the database connection and creating the users table
+> You can use any relational database: MySQL, PostgreSQL, SQLite.
+
+```php
+use PDO;
+use SimpleApiBitrix24\ApiDatabaseConfig;
+use SimpleApiBitrix24\DatabaseCore\TableManager;
+
+// Create a PDO instance
+$pdo = new PDO('mysql:host=localhost;port=3306;dbname=test', 'root', 'password');
+
+// Create a database configuration object.
+// If you need custom table or column names, pass them via ApiDatabaseConfig::__construct()
+$databaseConfig = ApiDatabaseConfig::build($pdo);
+
+// Create the users table if it does not exist
+$tableManager = new TableManager($databaseConfig);
+$tableManager->createUsersTableIfNotExists();
+```
+
+### 2.2 Creating a REST API client with OAuth 2.0 authorization
+
+```php
+use PDO;
+use SimpleApiBitrix24\ApiClientBitrix24;
+use SimpleApiBitrix24\ApiClientSettings;
+use SimpleApiBitrix24\ApiDatabaseConfig;
+use SimpleApiBitrix24\DatabaseCore\UserRepository;
+use SimpleApiBitrix24\Enums\AuthType;
+
+$pdo = new PDO('mysql:host=localhost;port=3306;dbname=test', 'root', 'password');
+$databaseConfig = ApiDatabaseConfig::build($pdo);
+
+// Load a user whose authorization tokens will be used
+$repository = new UserRepository($databaseConfig);
+$user = $repository->getUserByIdAndMemberId(1, 'bitrix24_member_id');
+
+// Create settings and set default credentials
+$apiSettings = new ApiClientSettings(AuthType::TOKEN);
+$apiSettings->setDefaultCredentials($user);
+
+// Create the REST API client
+$api = new ApiClientBitrix24($apiSettings, $databaseConfig);
+
+print_r($api->call('crm.deals.get', ['ID' => 2]));
+```
+
+### 2.3 Application installation and saving user data to the database
+
+```php
+use PDO;
+use SimpleApiBitrix24\ApiClientBitrix24;
+use SimpleApiBitrix24\ApiClientSettings;
+use SimpleApiBitrix24\ApiDatabaseConfig;
+use SimpleApiBitrix24\DatabaseCore\UserRepository;
+use SimpleApiBitrix24\Enums\AuthType;
+use SimpleApiBitrix24\Services\Installation\InstallationService;
+
+$pdo = new PDO('mysql:host=localhost;port=3306;dbname=test', 'root', 'password');
+$databaseConfig = ApiDatabaseConfig::build($pdo);
+
+$apiSettings = new ApiClientSettings(AuthType::TOKEN);
+$api = new ApiClientBitrix24($apiSettings, $databaseConfig);
+
+// Create and save the user in the database
+$user = InstallationService::createUserFromProfileAndSave(
+    $databaseConfig,
+    'local.693c2b5c42e7c3.81926786',
+    'fDlCI34BZbbWv31iNm7H1jpwmu5py9vMyMkkVzQ3IC3WQdPQC4',
+    $_REQUEST['member_id'],
+    $_REQUEST['AUTH_ID'],
+    $_REQUEST['REFRESH_ID'],
+    $_REQUEST['DOMAIN']
+);
+
+// Your installation logic here
+$api->setCredentials($user);
+print_r($api->call('scope'));
+
+// Finalize installation
+InstallationService::finishInstallation();
+```
+
+## 3. Detailed usage of the REST API client
+
+### 3.1 Setting default authorization for the REST API client
+
 ```php
 use SimpleApiBitrix24\ApiClientSettings;
 
-$apiSettings = new ApiClientSettings();
-$apiSettings->setTokenAuthEnabled(true)
-            ->setDefaultConnection('your_member_id')
-            ->setQueryLimitExceededHandler(handleEnabled: true, usleep: 500000)
-            ->setOperationTimeLimitHandler(handleEnabled: true, usleep: 5000000);
-```
-По умолчанию обработка этих ошибок отключена, при включении укажите время ожидания в микросекундах.
-При получении ответа с одной из этих ошибок API Client будет делать повторный запрос через заданный интервал времени,
-не останавливая работу скрипта, делать это будет постоянно пока не завершится выполнение скрипта или 
-не закончится время жизни приложения.
-
----
-# English
-
-### Client for Bitrix24 REST API:
-### OAuth 2.0 (with automatic token refresh), Webhook, support for all popular relational databases, manager for installing local/distributed applications. Installation of a single local application across multiple portals.
-
-## Table of Contents:
-1. [Quick Start: Webhook Connection](#1-quick-start-webhook-connection)
-
-2. [OAuth 2.0 Connection (Local or Edition App)](#2-oauth-20-connection-local-or-edition-app))
-
-   2.1. [Preparing the Database for Token Storage](#21-preparing-the-database-for-token-storage)
-
-   2.2. [Creating an OAuth 2.0 Connection Object](#22-creating-an-oauth-20-connection-object)
-
-   2.3. [App Installation](#23-app-installation)
-
-3. [Switching or Cloning the Connection](#3-switching-or-cloning-the-connection)
-
-4. [Logging](#4-logging)
-
-   4.1. [Debug Logging](#41-debug-logging)
-
-   4.2. [Recommended Logging Level](#42-recommended-logging-level)
-
-5. [Batch Requests](#5-batch-requests)
-
-   5.1 [Standard Batch Request](#51-standard-batch-request)
-
-   5.2 [Batch Service](#52-batch-service)
-
-6. [Built-in REST API Limit Handling Service](#6-built-in-rest-api-limit-handling-service)
-
-## 1. Quick Start: Webhook Connection
-```php
-    use SimpleApiBitrix24\ApiClientSettings;
-    use SimpleApiBitrix24\ApiClientBitrix24;
-
-    $apiSettings = new ApiClientSettings();
-    $apiSettings->setWebhookAuthEnabled(true)
-                ->setDefaultConnection('https://portal.bitrix24.ru/rest/1/cj03r****1wbeg/');
-
-    $api = new ApiClientBitrix24($apiSettings);
-    
-    $result = $api->call('crm.deal.get', ['ID' => 1]);
+$apiSettings = new ApiClientSettings(AuthType::TOKEN);
+$apiSettings->setDefaultCredentials($user);
 ```
 
-## 2. OAuth 2.0 Connection (Local or Edition App
-> You can install the same local app on different portals.
-> Ensure client_id and client_secret are correct during installation,
-> otherwise tokens won’t refresh when they expire, and the app will throw an exception.
-
-
-
-### 2.1 Preparing the Database for Token Storage
-Use any database of your choice:
-- PostgreSQL
-- MySQL
-- SQLite
-- SQLServer
-
-Create a table in the database. Example query for MySQL:
-```sql
-    CREATE TABLE api_tokens_bitrix24(
-    id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-    member_id VARCHAR(255) UNIQUE NOT NULL,
-    access_token VARCHAR(255) NOT NULL,
-    expires_in VARCHAR(255) NOT NULL,
-    application_token VARCHAR(255) NOT NULL,
-    refresh_token VARCHAR(255) NOT NULL,
-    domain VARCHAR(255) NOT NULL,
-    client_endpoint VARCHAR(255) NOT NULL,
-    client_id VARCHAR(255) NOT NULL,
-    client_secret VARCHAR(255) NOT NULL
-    );
-```
-
-
-
-### 2.2 Creating an OAuth 2.0 Connection Object
+### 3.2 Switching authorization / working with multiple portals or users simultaneously
 
 ```php
-    use SimpleApiBitrix24\ApiDatabaseConfig;
-    use SimpleApiBitrix24\ApiClientSettings;
-    use SimpleApiBitrix24\ApiClientBitrix24;
+use PDO;
+use SimpleApiBitrix24\ApiClientBitrix24;
+use SimpleApiBitrix24\ApiClientSettings;
+use SimpleApiBitrix24\ApiDatabaseConfig;
+use SimpleApiBitrix24\DatabaseCore\UserRepository;
+use SimpleApiBitrix24\Enums\AuthType;
+use SimpleApiBitrix24\Services\Installation\InstallationService;
 
-    $pdo = new PDO('mysql:host=172.17.0.1;port=3306;dbname=bitrix24', 'root', 'password'); // Your database connection settings
+$pdo = new PDO('mysql:host=localhost;port=3306;dbname=test', 'root', 'password');
+$databaseConfig = ApiDatabaseConfig::build($pdo);   // If you need custom table or column names, pass them via ApiDatabaseConfig::__construct()
+$apiSettings = new ApiClientSettings(AuthType::TOKEN);
 
-    $databaseConfig = new ApiDatabaseConfig(
-        pdo: $pdo,
-        tableName: 'api_tokens_bitrix24',
-        primaryKeyColumnName: 'id',
-        memberIdColumnName: 'member_id',
-        accessTokenColumnName: 'access_token',
-        expiresInColumnName: 'expires_in',
-        applicationTokenColumnName: 'application_token',
-        refreshTokenColumnName: 'refresh_token',
-        domainColumnName: 'domain',
-        clientEndpointColumnName: 'client_endpoint',
-        clientIdColumnName: 'client_id',
-        clientSecretColumnName: 'client_secret'
-    );
+// User #1
+$repository = new UserRepository($databaseConfig);
+$user_1 = $repository->getUserByIdAndMemberId(1, 'bitrix24_member_id_1');
 
-    $apiSettings = new ApiClientSettings();
-    $apiSettings->setTokenAuthEnabled(true)
-                ->setDefaultConnection('your_member_id');
+$apiClient_1 = new ApiClientBitrix24($apiSettings, $databaseConfig);
+$apiClient_1->setCredentials($user_1);
 
-    $api = new ApiClientBitrix24($apiSettings, $databaseConfig);
+// User #2
+$user_2 = $repository->getFirstAdminByMemberId('bitrix24_member_id_2');
 
-    $result = $api->call('crm.deal.get', ['ID' => 1]);
+$apiClient_2 = clone $apiClient_1;
+$apiClient_2->setCredentials($user_2);
+
+// Now both clients work independently
+print_r($apiClient_1->call('profile'));
+print_r($apiClient_2->call('profile'));
 ```
 
-To dynamically set the connection based on $_REQUEST['member_id'], do this:
+### 3.3 Saving user data to the database
+
+Be careful when passing client_id and client_secret to InstallationService::createUserFromProfileAndSave.
+They are stored per user, enabling local apps to behave like multi‑tenant apps.
+If you provide incorrect values, token refresh will fail and the client will throw an exception.
 ```php
-    // ...
-    
-    $apiSettings = new ApiClientSettings();
-    $apiSettings->setTokenAuthEnabled(true);
-    
-    $api = new ApiClientBitrix24($apiSettings, $databaseConfig);
-    $api->connectTo($_REQUEST['member_id']);
-    
-    $result = $api->call('crm.deal.get', ['ID' => 1]);
+use SimpleApiBitrix24\Services\Installation\InstallationService;
+
+InstallationService::createUserFromProfileAndSave(
+    $databaseConfig,
+    'local.693c2b5c42e7c3.81926786',
+    'fDlCI34BZbbWv31iNm7H1jpwmu5py9vMyMkkVzQ3IC3WQdPQC4',
+    $_REQUEST['member_id'],
+    $_REQUEST['AUTH_ID'],
+    $_REQUEST['REFRESH_ID'],
+    $_REQUEST['DOMAIN']
+);
 ```
 
-
-### 2.3 App Installation
-
-```php
-    use SimpleApiBitrix24\Services\Installation\InstallationService;
-    
-    // Start installation (add user to the database)
-    $installationService = new InstallationService();
-    $installationService->startInstallation(
-        'local.67c9b****83.1668***79',                              // client id
-        '7KriLM5****T6tCgVSqUj2ILZFms5*****keBzYbzqso',             // client secret
-        $databaseConfig,                                            // SimpleApiBitrix24\ApiDatabaseConfig, see creation example above
-        $_REQUEST
-    );
-    
-    // Add your app installation logic here, if needed
-    $api->connectTo($_REQUEST['member_id']);                        // SimpleApiBitrix24\ApiClientBitrix24, see creation example above
-    $result = $api->call('scope');
-
-    // Finish installation
-    $installationService->finishInstallation();                     // Reloads the page to index
-```
-
-
-
-
-## 3. Switching or Cloning the Connection
-
-Switching/setting a connection:
-```php
-    $api->connectTo('member_id__or__webhook_url');                  // SimpleApiBitrix24\ApiClientBitrix24 object
-```
-Cloning the connection object to work with multiple Bitrix24 portals simultaneously:
-```php
-    $secondApi = clone $firstApi;                                   // SimpleApiBitrix24\ApiClientBitrix24 object
-    $secondApi->connectTo('new_member_id__or__webhook_url');        // Creates a second object connected to another portal
-```
-
-
-
-## 4. Logging
-
-### 4.1 Debug Logging
-At the DEBUG logging level, all requests and responses will be logged.
+### 3.4 Working with users via UserRepository
 
 ```php
-    use Monolog\Formatter\LineFormatter;
-    use Monolog\Handler\RotatingFileHandler;
-    use Monolog\Logger;
+use PDO;
+use SimpleApiBitrix24\ApiClientBitrix24;
+use SimpleApiBitrix24\DatabaseCore\UserRepository;
 
-    $logger = new Logger('api-b24');
-        
-    $handler = new RotatingFileHandler(
-        '/var/www/poject/storage/logs/api-b24.log',                     // Your log file path
-        5,
-    Logger::DEBUG
-    );
-    
-    $formatter = new LineFormatter(
-        "[%datetime%] %level_name%: %message% %context%\n",
-        'Y-m-d H:i:s',
-        true
-    );
-    $formatter->setJsonPrettyPrint(true);
-    $handler->setFormatter($formatter);
-    $logger->pushHandler($handler);
+$pdo = new PDO('mysql:host=localhost;port=3306;dbname=test', 'root', 'password');
+$databaseConfig = ApiDatabaseConfig::build($pdo);   // If you need custom table or column names, pass them via ApiDatabaseConfig::__construct()
 
-    $api = new ApiClientBitrix24($apiSettings, null, $logger);          // SimpleApiBitrix24\ApiClientBitrix24, see creation example above
-```
+// All methods and description can be found in the repository implementation
+$repository = new UserRepository($databaseConfig);
 
-### 4.2 Recommended Logging Level
-The recommended logging level is WARNING.
+$user = $repository->getFirstUserByMemberId('member_id');
+$user = $repository->getFirstAdminByMemberId('member_id');
 
-Only Bitrix24 server error responses or exceptions from this SimpleApiBitrix24 package will be logged.
-```php
-    // ...
-    
-    $handler = new RotatingFileHandler(
-        '/var/www/poject/storage/logs/api-b24.log',                     // Your log file path
-        5,
-    Logger::WARNING
-    );
-    
-    // ...
+$users = $repository->getAllUsersByMemberId('member_id');
 
-```
-
-## 5. Batch Requests
-
-### 5.1 Standard Batch Request
-
-> Up to 50 requests can be included in a single batch request.
-> 
-> https://apidocs.bitrix24.com/api-reference/how-to-call-rest-api/batch.html
-
-
-```php
-    $result = $api->callBatch([
-        [
-            'method' => 'crm.deal.get',
-            'params' => ['id' => 1]
-        ],
-        [
-            'method' => 'tasks.deal.get',
-            'params' => ['id' => 2]
-        ],
-    ]);
-```
-
-### 5.2 Batch Service
-
-> SimpleApiBitrix24\Services\Batch
-
-Retrieving all entity items. Works only with list-type methods.
-```php
-    use SimpleApiBitrix24\Services\Batch;
-    
-    $batchService = new Batch($api);                   // $api is an instance of SimpleApiBitrix24\ApiClientBitrix24
-    $tasks = $batchService->getAll('tasks.task.list', ['filter' => ['STATUS' => 5]]);
-```
-
-Retrieving results with specified key names. Limit: 50 batched requests per call.
-```php
-    use SimpleApiBitrix24\Services\Batch;
-    
-    $batchService = new Batch($api);                   // $api is an instance of SimpleApiBitrix24\ApiClientBitrix24
-    $batchService->callWithKeys([
-        'scope_response' => ['method' => 'scope', 'params' => []],
-        'deal_list_response' => ['method' => 'crm.deal.list', 'params' => ['select' => ['ID', 'TITLE']]],
-    ]);
+$repository->delete($user);
 ```
 
 
-### 6. Built-in REST API Limit Handling Service
-> For more details on REST API limits, refer to the official documentation:
+## 4. Configuring Bitrix24 REST API rate‑limit handling
+
+> For more details on Bitrix24 REST API limits, see:
 >
 > https://apidocs.bitrix24.com/limits.html
 
-This package can handle REST API limit error responses:
+This client can automatically handle REST API rate‑limit errors.
 
-Examples of handled REST API server errors:
+Examples of handled errors:
 ```json
 {
     "error": "QUERY_LIMIT_EXCEEDED",
@@ -592,22 +658,117 @@ Examples of handled REST API server errors:
 ```
 ```json
 {
-    "error": "OPERATION_TIME_LIMIT",
-    "error_description": "Method is blocked due to operation time limit."
+  "error": "OPERATION_TIME_LIMIT",
+  "error_description": "Method is blocked due to operation time limit."
 }
 ```
-Error handling is enabled through the configuration of the SimpleApiBitrix24\ApiClientSettings object:
+
+By default, rate‑limit handling is enabled.
+
+When such an error occurs, the client retries the request after a configured delay, continuing until the script finishes or the application lifetime ends.
 
 ```php
+use PDO;
+use SimpleApiBitrix24\ApiClientBitrix24;
 use SimpleApiBitrix24\ApiClientSettings;
+use SimpleApiBitrix24\ApiDatabaseConfig;
+use SimpleApiBitrix24\Enums\AuthType;
 
-$apiSettings = new ApiClientSettings();
-$apiSettings->setTokenAuthEnabled(true)
-            ->setDefaultConnection('your_member_id')
-            ->setQueryLimitExceededHandler(handleEnabled: true, usleep: 500000)
-            ->setOperationTimeLimitHandler(handleEnabled: true, usleep: 5000000);
+$pdo = new PDO('mysql:host=localhost;port=3306;dbname=test', 'root', 'password');
+$databaseConfig = ApiDatabaseConfig::build($pdo);
+
+// by default, limit processing is always enabled when creating an ApiClientSettings object;
+// you can disable it or set your own interval for re-request in microseconds
+$apiSettings = new ApiClientSettings(AuthType::TOKEN);
+$apiSettings
+    ->setOperationTimeLimitHandler(true, 5000000)
+    ->setQueryLimitExceededHandler(true, 1000000);
+
+$api = new ApiClientBitrix24($apiSettings, $databaseConfig);
 ```
-By default, handling of these errors is disabled. When enabled, specify the wait time in microseconds.
-Upon receiving one of these error responses, the API client will retry the request after the specified time interval
-without stopping the script's execution. It will continue doing so until the script completes or
-the application's lifetime expires.
+
+Additionally, the client handles:
+
+- rare cases of empty responses from Bitrix24 (automatically retries)
+- token refresh and saving new tokens to the database
+
+All other errors result in exceptions.
+
+
+## 5. Logging
+
+With log level DEBUG, all requests and responses are logged.
+
+With WARNING, only errors and exceptions are logged.
+```php
+use Monolog\Formatter\LineFormatter;
+use Monolog\Handler\RotatingFileHandler;
+use Monolog\Logger;
+use PDO;
+use SimpleApiBitrix24\ApiClientBitrix24;
+use SimpleApiBitrix24\ApiClientSettings;
+use SimpleApiBitrix24\ApiDatabaseConfig;
+use SimpleApiBitrix24\Enums\AuthType;
+
+$pdo = new PDO('mysql:host=localhost;port=3306;dbname=test', 'root', 'password');
+$databaseConfig = ApiDatabaseConfig::build($pdo);   // If you need custom table or column names, pass them via ApiDatabaseConfig::__construct()
+$apiSettings = new ApiClientSettings(AuthType::TOKEN);
+
+$logger = new Logger('api-b24');
+$handler = new RotatingFileHandler(
+    storage_path('logs/rest-api-bitrix24.log'),
+    15,
+    Logger::DEBUG
+);
+$formatter = new LineFormatter(
+    "[%datetime%] %level_name%: %message% %context%\n",
+    'Y-m-d H:i:s',
+    true
+);
+$formatter->setJsonPrettyPrint(true);
+$handler->setFormatter($formatter);
+$logger->pushHandler($handler);
+
+$api = new ApiClientBitrix24($apiSettings, $databaseConfig, $logger);
+```
+
+## 6. Batch
+
+### 6.1 Basic batch request
+
+```php
+use SimpleApiBitrix24\ApiClientBitrix24;
+
+//...
+
+$api = new ApiClientBitrix24($apiSettings, $databaseConfig);
+
+$result = $api->callBatch([
+    ['method' => 'scope', 'params' => []],
+    ['method' => 'crm.deal.list', 'params' => ['select' => ['ID', 'TITLE']]],
+]);
+
+print_r($result);
+```
+
+### 6.2 Batch service
+
+```php
+use SimpleApiBitrix24\ApiClientBitrix24;
+use SimpleApiBitrix24\Services\Batch;
+
+// ...
+
+$api = new ApiClientBitrix24($apiSettings, $databaseConfig);
+
+$batchService = new Batch($api);
+
+// Retrieve all items of an entity (works only with list‑type methods)
+$getAllResult = $batchService->getAll('tasks.task.list', ['filter' => ['STATUS' => 5]]);
+
+// Returns responses sorted by the same keys you provide
+$resultWithKeys = $batchService->callWithKeys([
+    'scope_response' => ['method' => 'scope', 'params' => []],
+    'deal_list_response' => ['method' => 'crm.deal.list', 'params' => ['select' => ['ID', 'TITLE']]],
+])
+```

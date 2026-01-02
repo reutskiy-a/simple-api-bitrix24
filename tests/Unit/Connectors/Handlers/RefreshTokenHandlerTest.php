@@ -44,7 +44,7 @@ class RefreshTokenHandlerTest extends BaseTestCase
         $repository->save($this->user);
 
         $apiSettings = new ApiClientSettings(AuthType::TOKEN);
-        $apiSettings->setDefaultConnection($this->user);
+        $apiSettings->setDefaultCredentials($this->user);
 
         $this->api = new ApiClientBitrix24($apiSettings, $this->databaseConfig);
     }

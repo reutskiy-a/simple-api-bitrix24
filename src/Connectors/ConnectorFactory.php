@@ -25,7 +25,7 @@ abstract class ConnectorFactory
 
 
         if ($apiSettings->isWebhookAuthEnabled()) {
-            return new WebhookConnector($apiSettings->getDefaultConnection(), $errorResponseManager);
+            return new WebhookConnector($apiSettings->getDefaultCredentials(), $errorResponseManager);
         }
 
         if ($apiSettings->isTokenAuthEnabled()) {
@@ -35,7 +35,7 @@ abstract class ConnectorFactory
             $errorResponseManager
                 ->addErrorHandler($refreshTokenService);
 
-            return new TokenConnector($apiSettings->getDefaultConnection(), $errorResponseManager);
+            return new TokenConnector($apiSettings->getDefaultCredentials(), $errorResponseManager);
         }
 
         throw new ConnectorException('No connector is specified in the settings');

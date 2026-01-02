@@ -10,13 +10,12 @@ use SimpleApiBitrix24\Connectors\Handlers\QueryLimitExceededHandler;
 use SimpleApiBitrix24\Connectors\Models\Webhook;
 use SimpleApiBitrix24\DatabaseCore\Models\User;
 use SimpleApiBitrix24\Enums\AuthType;
-use SimpleApiBitrix24\Utils\Helper;
 
 class ApiClientSettings
 {
     private bool $webhookAuthEnabled;
     private bool $tokenAuthEnabled;
-    private Webhook|User|null $defaultConnection = null;
+    private Webhook|User|null $defaultCredentials = null;
     private ?QueryLimitExceededHandler $queryLimitExceededHandler = null;
     private ?OperationTimeLimitHandler $operationTimeLimitHandler = null;
 
@@ -26,9 +25,9 @@ class ApiClientSettings
         $this->tokenAuthEnabled = $authType === AuthType::TOKEN;
     }
 
-    public function setDefaultConnection(Webhook|User $credentials): ApiClientSettings
+    public function setDefaultCredentials(Webhook|User $credentials): ApiClientSettings
     {
-        $this->defaultConnection = $credentials;
+        $this->defaultCredentials = $credentials;
         return $this;
     }
 
@@ -58,13 +57,13 @@ class ApiClientSettings
         return $this->tokenAuthEnabled;
     }
 
-    public function getDefaultConnection(): Webhook|User|null
+    public function getDefaultCredentials(): Webhook|User|null
     {
-        if ($this->webhookAuthEnabled && $this->defaultConnection === null) {
+        if ($this->webhookAuthEnabled && $this->defaultCredentials === null) {
             return new Webhook('null');
         }
 
-        return $this->defaultConnection;
+        return $this->defaultCredentials;
     }
 
     public function getQueryLimitExceededHandler(): QueryLimitExceededHandler

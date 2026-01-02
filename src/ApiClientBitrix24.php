@@ -13,8 +13,6 @@ use SimpleApiBitrix24\Exceptions\ConnectorException;
 use SimpleApiBitrix24\Managers\LogManager;
 use Throwable;
 
-;
-
 class ApiClientBitrix24
 {
     private ApiClientSettings $apiSettings;
@@ -33,9 +31,9 @@ class ApiClientBitrix24
         $this->connector = ConnectorFactory::create($apiSettings, $apiDatabaseConfig);
     }
 
-    public function getConnectionObject(): Webhook|User|null
+    public function getCredentials(): Webhook|User|null
     {
-        return $this->apiSettings->getDefaultConnection();
+        return $this->apiSettings->getDefaultCredentials();
     }
 
     /**
@@ -45,6 +43,10 @@ class ApiClientBitrix24
      * ```php
      * $api->call('crm.deal.get', ['id' => 2]);
      * ```
+     * @param string $method
+     * @param array $params
+     * @return array
+     * @throws Throwable
      */
     public function call(string $method, array $params = []): array
     {
@@ -82,21 +84,31 @@ class ApiClientBitrix24
     }
 
     /**
-     * Use this method to change the connection to the Bitrix24 API.
-     * Alternatively, use it when you need a second ApiClient instance, e.g.:
+     * Updates the authorization credentials used by this ApiClient instance.
+     * After calling this method, all subsequent API requests will be executed
+     * using the provided Webhook or User credentials.
+     *
+     * This is useful when you need to switch the active Bitrix24 account
+     * or reuse an existing ApiClient instance for another user.
+     *
+     * Use it when you need a second ApiClient instance, e.g.:
      * ```php
-     * $secondApi = cloned $firstApi; $secondApi->connectTo($credentials);
+     * $secondApi = cloned $firstApi; $secondApi->setCredentials($credentials);
      * ```
      *
      * @param Webhook|User $credentials
      * @return string
      * @throws ConnectorException
      */
-    public function connectTo(Webhook|User $credentials): string
+    public function setCredentials(Webhook|User $credentials): string
     {
-        $this->apiSettings->setDefaultConnection($credentials);
+        $this->apiSettings->setDefaultCredentials($credentials);
         $this->connector = ConnectorFactory::create($this->apiSettings, $this->apiDatabaseConfig);
         return get_class($this->connector);
     }
 
+    public function __clone()
+    {
+        $this->apiSettings = clone $this->apiSettings;
+    }
 }

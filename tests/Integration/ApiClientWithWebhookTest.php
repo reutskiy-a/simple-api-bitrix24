@@ -19,7 +19,7 @@ class ApiClientWithWebhookTest extends BaseTestCase
     public function setUp(): void
     {
         $apiSettings = new ApiClientSettings(AuthType::WEBHOOK);
-        $apiSettings->setDefaultConnection(new Webhook($_ENV['WEBHOOK']));
+        $apiSettings->setDefaultCredentials(new Webhook($_ENV['WEBHOOK']));
         $this->api = new ApiClientBitrix24($apiSettings);
     }
 
