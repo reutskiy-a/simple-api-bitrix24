@@ -55,7 +55,7 @@ class ApiClientBitrix24
             $this->logManager->handleResponseError(['method' => $method, 'params' => $params], $response);
             return $response;
         } catch (Throwable $exception) {
-            $this->logManager->error($exception->getMessage(), [], $exception);
+            $this->logManager->error(['method' => $method, 'params' => $params], $exception);
             throw $exception;
         }
     }
@@ -78,7 +78,7 @@ class ApiClientBitrix24
             $this->logManager->handleBatchResponseErrors($queries, $response);
             return $response;
         } catch (Throwable $exception) {
-            $this->logManager->error($exception->getMessage(), [], $exception);
+            $this->logManager->error($queries, $exception);
             throw $exception;
         }
     }

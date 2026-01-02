@@ -84,7 +84,6 @@ class LogManager
     }
 
     public function error(
-        string|\Stringable $message,
         array $context = [],
         ?Throwable $exception = null
     ): void {
@@ -94,8 +93,8 @@ class LogManager
 
         $exception = $exception ?? new ApiClientBitrix24Exception();
 
-        $this->logger->error($message, [
-            'data' => $context,
+        $this->logger->error($exception->getMessage(), [
+            'data' => ['query' => $context],
             'trace' => $exception->getTraceAsString()
         ]);
     }
