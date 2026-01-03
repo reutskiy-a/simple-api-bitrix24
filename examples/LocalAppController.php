@@ -40,8 +40,8 @@ class LocalAppController
         /**
          * STEP 2
          *
-         * Создаем объект конфигурации, через который REST API клиент будет понимать, как работать с базой данных.
-         * We create a configuration object through which the REST API client will understand how to work with the database.
+         * Создаём объект конфигурации, через который REST API клиент получает информацию о структуре базы данных.
+         * We create a configuration object through which the REST API client receives information about the database structure.
          */
 
         // Вариант 1: вручную задать структуру таблицы  | Option 1: manually describe the table structure
