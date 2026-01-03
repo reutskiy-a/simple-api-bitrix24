@@ -81,7 +81,7 @@ class LocalAppController
          */
         $logger = new Logger('api-b24');
         $handler = new RotatingFileHandler(
-            \App\Http\Controllers\storage_path('logs/rest-api-bitrix24.log'),
+            storage_path('logs/rest-api-bitrix24.log'),
             15,
             Logger::DEBUG
         );
@@ -140,6 +140,7 @@ class LocalAppController
         $this->api->setCredentials($user);
         echo '<pre>';
         print_r($this->api->call('scope'));
+        echo PHP_EOL . '<h1>INSTALLATION DONE</h1>';
         echo '</pre>';
 
         /**
@@ -185,7 +186,7 @@ class LocalAppController
 
         echo '<pre>';
         print_r($this->api->call('scope'));
-        echo PHP_EOL . 'HELLO BITRIX24 APP';
+        echo PHP_EOL . '<h1>HELLO BITRIX24 APP</h1>';
         echo '</pre>';
     }
 }
