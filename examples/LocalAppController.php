@@ -40,11 +40,11 @@ class LocalAppController
         /**
          * STEP 2
          *
-         * Создаем объект конфигурации, через который rest api клиент будет понимать, как работать с базой данных.
+         * Создаем объект конфигурации, через который REST API клиент будет понимать, как работать с базой данных.
          * We create a configuration object through which the REST API client will understand how to work with the database.
          */
 
-        // Вариант 1: вручную задачть структуру таблицы  | Option 1: manually describe the table structure
+        // Вариант 1: вручную задать структуру таблицы  | Option 1: manually describe the table structure
         $this->databaseConfig = new ApiDatabaseConfig(
             pdo: $pdo,
             tableName: DatabaseConstants::TABLE_NAME,
@@ -67,7 +67,7 @@ class LocalAppController
         /**
          *  STEP 3
          *
-         * Создадим объект настроек для rest api клиента.
+         * Создадим объект настроек для REST API клиента.
          * Let’s create a settings object for the REST API client.
          */
         $apiSettings = new ApiClientSettings(AuthType::TOKEN);
@@ -98,7 +98,7 @@ class LocalAppController
         /**
          * STEP 5
          *
-         * Создадим объект rest api клиента.
+         * Создадим объект REST API клиента.
          * Let’s create a REST API client object.
          */
         $this->api = new ApiClientBitrix24($apiSettings, $this->databaseConfig, $logger);
@@ -109,7 +109,7 @@ class LocalAppController
         /**
          * STEP 6
          *
-         * До установкой приложения используем встроенный в этот пакет менеджер быстрого создания таблицы пользователей.
+         * Перед установкой приложения используем встроенный менеджер для быстрого создания таблицы пользователей.
          * Before installing the application, we use the built‑in quick user table creation manager from this package.
          */
         $tableManager = new TableManager($this->databaseConfig);
@@ -118,7 +118,7 @@ class LocalAppController
         /**
          * STEP 7
          *
-         * Сохрараняем в базу данных токены и информацию пользователя запустившего установку приложения.
+         * Сохраняем в базу данных токены и информацию пользователя, запустившего установку приложения.
          * We save to the database the tokens and the information of the user who launched the application installation.
          */
         $user = InstallationService::createUserFromProfileAndSave(
@@ -157,7 +157,7 @@ class LocalAppController
         /**
          * STEP 10
          *
-         * Работа с сохраненными данными пользователей в базе
+         * Работа с сохранёнными данными пользователей в базе данных
          * Working with saved user data in the database
          *
          * Описание всех методов смотрите в / See the description of all methods in
@@ -165,10 +165,10 @@ class LocalAppController
          */
         $repository = new UserRepository($this->databaseConfig);
 
-        // получим пользователя с правами администратора. / Get a user with administrator rights.
+        // Получим пользователя с правами администратора. / Get a user with administrator rights.
         $user = $repository->getFirstAdminByMemberId($_REQUEST['member_id']);
 
-        // или создим новый объект пользователя и сохраним его сразу в базе из полученных данных от сервера rest api.
+        // или создадим новый объект пользователя и сохраним его сразу в базе из полученных данных от сервера REST API.
         // Or create a new user object and save it directly in the database from the data received from the REST API server.
         $user = InstallationService::createUserFromProfileAndSave(
             $this->databaseConfig,
@@ -180,7 +180,7 @@ class LocalAppController
             $_REQUEST['DOMAIN']
         );
 
-        // устанавливаем авторизацию для rest api клиента. / Set up the authorization for the REST API client.
+        // Устанавливаем авторизационные данные для REST API клиента. / Set up the authorization for the REST API client.
         $this->api->setCredentials($user);
 
         echo '<pre>';
