@@ -92,8 +92,10 @@ class ApiClientBitrix24
      * or reuse an existing ApiClient instance for another user.
      *
      * Use it when you need a second ApiClient instance, e.g.:
+     * @example
      * ```php
-     * $secondApi = cloned $firstApi; $secondApi->setCredentials($credentials);
+     * $secondApi = cloned $firstApi;
+     * $secondApi->setCredentials($credentials);
      * ```
      *
      * @param Webhook|User $credentials
