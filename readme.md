@@ -74,7 +74,7 @@ $apiSettings->setDefaultCredentials(new Webhook('https://test.bitrix24.ru/rest/1
 
 $api = new ApiClientBitrix24($apiSettings);
 
-print_r($api->call('crm.deals.get', ['ID' => 2]));
+print_r($api->call('crm.deal.get', ['ID' => 2]));
 ```
 
 
@@ -125,7 +125,7 @@ $apiSettings->setDefaultCredentials($user);
 // создаём объект REST API клиента
 $api = new ApiClientBitrix24($apiSettings, $databaseConfig);
 
-print_r($api->call('crm.deals.get', ['ID' => 2]));
+print_r($api->call('crm.deal.get', ['ID' => 2]));
 ```
 
 ### 2.3 Установка приложения и сохранение данных пользователя в БД
@@ -454,7 +454,7 @@ $apiSettings->setDefaultCredentials(new Webhook('https://test.bitrix24.ru/rest/1
 
 $api = new ApiClientBitrix24($apiSettings);
 
-print_r($api->call('crm.deals.get', ['ID' => 2]));
+print_r($api->call('crm.deal.get', ['ID' => 2]));
 ```
 
 
@@ -504,7 +504,7 @@ $apiSettings->setDefaultCredentials($user);
 // Create the REST API client
 $api = new ApiClientBitrix24($apiSettings, $databaseConfig);
 
-print_r($api->call('crm.deals.get', ['ID' => 2]));
+print_r($api->call('crm.deal.get', ['ID' => 2]));
 ```
 
 ### 2.3 Application installation and saving user data to the database
