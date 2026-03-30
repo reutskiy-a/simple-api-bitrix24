@@ -21,6 +21,7 @@
         "nesbot/carbon": "^2.0 || ^3.0"
     },
     "require-dev": {
+        "kint-php/kint": "^6.0",
         "phpstan/phpstan": "^2.1",
         "phpunit/phpunit": "^10.0 || ^11.0 || ^12.0",
         "vlucas/phpdotenv": "^3.0 || ^4.0 || ^5.0"

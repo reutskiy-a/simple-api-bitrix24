@@ -34,7 +34,7 @@ class WebhookConnector implements ConnectorInterface
     {
         $this->assertValidCredentials($this->webhook->getUrl());
 
-        $url = $this->webhook->getUrl() . $method . ".json";
+        $url = $this->webhook->getUrl() . $method;
         $response = $this->makeHttpRequest($url, $params);
         $response = json_decode($response->getBody()->getContents(), true);
 
@@ -52,7 +52,7 @@ class WebhookConnector implements ConnectorInterface
     {
         $this->assertValidCredentials($this->webhook->getUrl());
 
-        $url = $this->webhook->getUrl() . "batch.json";
+        $url = $this->webhook->getUrl() . "batch";
         $httpQuery = $this->buildBatchQueries($queries);
         $data = ['cmd' => $httpQuery, 'halt' => 0];
 

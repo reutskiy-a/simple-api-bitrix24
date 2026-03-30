@@ -39,7 +39,7 @@ class TokenConnector implements ConnectorInterface
     {
         $this->assertValidCredentials($this->user);
 
-        $url = $this->getClientEndPoint($this->user->getDomain()) . $method . ".json";
+        $url = $this->getClientEndPoint($this->user->getDomain()) . $method;
         $data = $params;
         $data['auth'] = $this->user->getAuthToken();
 
@@ -61,7 +61,7 @@ class TokenConnector implements ConnectorInterface
     {
         $this->assertValidCredentials($this->user);
 
-        $url = $this->getClientEndPoint($this->user->getDomain()) . "batch.json";
+        $url = $this->getClientEndPoint($this->user->getDomain()) . "batch";
         $httpQuery = $this->buildBatchQueries($queries);
         $data = ['cmd' => $httpQuery, 'halt' => 0, 'auth' => $this->user->getAuthToken()];
 
