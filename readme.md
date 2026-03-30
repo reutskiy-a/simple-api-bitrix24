@@ -26,7 +26,7 @@ lang: [Русский](#что-умеет) / [English](#english)
 Более детальную информацию и примеры по работе с REST API клиентом смотрите в содержании ниже.
 
 > Пример установки локального приложения:
-> https://github.com/reutskiy-a/simple-api-bitrix24/blob/master/examples/LocalAppController.php
+> https://github.com/reutskiy-a/simple-api-bitrix24/tree/master/examples
 
 ![Installation-demo](https://raw.githubusercontent.com/reutskiy-a/assets/main/simple-api-bitrix24/simple_api_bitrix24_v2_local-app.gif)
 
@@ -411,7 +411,7 @@ $resultWithKeys = $batchService->callWithKeys([
 For more detailed information and usage examples, see the sections below.
 
 > Example of installing a local application:
-> https://github.com/reutskiy-a/simple-api-bitrix24/blob/master/examples/LocalAppController.php
+> https://github.com/reutskiy-a/simple-api-bitrix24/tree/master/examples
 
 ![Installation-demo](https://raw.githubusercontent.com/reutskiy-a/assets/main/simple-api-bitrix24/simple_api_bitrix24_v2_local-app.gif)
 
