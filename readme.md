@@ -25,7 +25,8 @@ lang: [Русский](#что-умеет) / [English](#english)
 
 Более детальную информацию и примеры по работе с REST API клиентом смотрите в содержании ниже.
 
-Пример установки локального приложения:
+Пример установки локального приложения: https://github.com/reutskiy-a/simple-api-bitrix24/blob/master/examples/LocalAppController.php
+
 ![Installation-demo](https://raw.githubusercontent.com/reutskiy-a/assets/main/simple-api-bitrix24/simple_api_bitrix24_v2_local-app.gif)
 
 ## Содержание:
@@ -97,7 +98,7 @@ $databaseConfig = ApiDatabaseConfig::build($pdo);
 
 // Создаём таблицу в базе, если она там отсутствует.
 $tableManager = new TableManager($databaseConfig);
-$tableManager->createUsersTableIfNotExists();
+$tableManager->createUsersTableIfNotExists();   // или $tableManager->createUsersTableIfNotExists('your_table_name')
 ```
 
 ### 2.2 Создание объекта REST API клиента с OAuth 2.0 авторизацией
@@ -408,6 +409,9 @@ $resultWithKeys = $batchService->callWithKeys([
 
 For more detailed information and usage examples, see the sections below.
 
+Example of installing a local application: https://github.com/reutskiy-a/simple-api-bitrix24/blob/master/examples/LocalAppController.php
+
+![Installation-demo](https://raw.githubusercontent.com/reutskiy-a/assets/main/simple-api-bitrix24/simple_api_bitrix24_v2_local-app.gif)
 
 ## Table of Contents:
 1. [Webhook Authorization — Quick Start](#1-webhook-authorization--quick-start)
@@ -477,7 +481,7 @@ $databaseConfig = ApiDatabaseConfig::build($pdo);
 
 // Create the users table if it does not exist
 $tableManager = new TableManager($databaseConfig);
-$tableManager->createUsersTableIfNotExists();
+$tableManager->createUsersTableIfNotExists();   // or $tableManager->createUsersTableIfNotExists('your_table_name')
 ```
 
 ### 2.2 Creating a REST API client with OAuth 2.0 authorization
