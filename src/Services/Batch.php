@@ -36,26 +36,34 @@ class Batch
      * @return array All items retrieved from the Bitrix24 API.
      *      Returns only the 'result' key data from each response received from the Bitrix24 server.
      */
-    public function getAll(string $listMethod, array $params = []): array
+    public function getAll(string $listMethod, array $params = [], null|int $limit = null): array
     {
+        $cycles = 0;
         $getData = $this->api->call($listMethod, $params);
         $total = $getData['total'];
-        $cycles = ceil($total / self::REQUEST_LIMIT);
-        $query = [];
-        $start = 0;
 
-        $error = $getData['error'] ?? null;
-        if (null !== $error) {
+        if (! empty($getData['error'])) {
             return $getData;
         }
 
         if ($total == 0) {
             return [];
         }
+
         if ($total <= self::RESPONSE_LIMIT) {
             return is_string(array_key_first($getData['result'])) ? reset($getData['result']) : $getData['result'];
         }
 
+        if ($limit === null || $limit >= $total) {
+            $cycles = ceil($total / self::REQUEST_LIMIT);
+        }
+
+        if ($limit !== null && $limit < $total) {
+            $cycles = ceil($limit / self::REQUEST_LIMIT);
+        }
+
+        $query = [];
+        $start = 0;
         for($i = 0; $i < $cycles; $i ++) {
             $query[$i] = ['method' => $listMethod, 'params' => $params];
             $query[$i]['params']['start'] = $start;
