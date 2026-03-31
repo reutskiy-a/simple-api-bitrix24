@@ -12,8 +12,7 @@ class DefaultErrorHandler implements ErrorHandlerInterface
 {
     public function canHandle(ErrorContext $errorContext): bool
     {
-        if (array_key_exists("error", $errorContext->response) &&
-            array_key_exists("error_description", $errorContext->response)) {
+        if (array_key_exists("error", $errorContext->response)) {
             return true;
         }
 

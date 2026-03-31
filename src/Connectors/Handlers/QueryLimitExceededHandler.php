@@ -26,8 +26,7 @@ class QueryLimitExceededHandler implements ErrorHandlerInterface
 
     public function canHandle(ErrorContext $errorContext): bool
     {
-        if ($errorContext->response['error'] === self::ERROR_TEMPLATE['error'] &&
-            $errorContext->response['error_description'] === self::ERROR_TEMPLATE['error_description']) {
+        if ($errorContext->response['error'] === self::ERROR_TEMPLATE['error']) {
             return true;
         }
 

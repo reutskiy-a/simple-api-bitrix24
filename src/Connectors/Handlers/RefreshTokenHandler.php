@@ -17,7 +17,7 @@ class RefreshTokenHandler implements ErrorHandlerInterface
 {
     private const ERROR_TEMPLATE = [
         'error' => 'expired_token',
-        'error_description' => 'The access token provided has expired.'
+        'error_description' => 'The access token provided has expired'
     ];
     private const ERROR_WRONG_CLIENT = 'wrong_client';
     private const ERROR_INVALID_GRANT = 'invalid_grant';
@@ -35,8 +35,7 @@ class RefreshTokenHandler implements ErrorHandlerInterface
 
     public function canHandle(ErrorContext $errorContext): bool
     {
-        if ($errorContext->response['error'] === self::ERROR_TEMPLATE['error'] &&
-            $errorContext->response['error_description'] === self::ERROR_TEMPLATE['error_description']) {
+        if ($errorContext->response['error'] === self::ERROR_TEMPLATE['error']) {
             return true;
         }
 
