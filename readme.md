@@ -2,7 +2,7 @@
 ![Integration Tests](https://img.shields.io/badge/Integration%20Tests-Passing-brightgreen)
 ![License](https://img.shields.io/github/license/reutskiy-a/simple-api-bitrix24)
 
-> REST API клиент для облачной версии Битрикс24
+> REST API клиент для облачной версии Битрикс24 (совместим с REST API 2.0)
 ```bash
 composer require reutskiy-a/simple-api-bitrix24
 ```
@@ -311,12 +311,14 @@ $api = new ApiClientBitrix24($apiSettings, $databaseConfig);
 
 ## 5. Логирование
 
-При уровне логирования DEBUG, будут логироваться все запросы и ответы от сервера Bitrix24.
+При уровне логирования DEBUG в журнал будут записываться:
+- все запросы, отправленные на сервер Bitrix24, и все полученные ответы
+- все исключения, возникающие в работе этого клиента
 
-При уровне логирования WARNING в логи попадут:
-- если один из ключей Batch запроса получил ошибку от сервера Bitrix24
-- ответ с ошибкой от сервера Bitrix24
-- исключения этого клиента
+При уровне логирования WARNING в журнал будут записываться:
+- запрос и ответ, если любой из элементов Batch‑запроса получил ошибку от сервера Bitrix24
+- все запросы и ответы, содержащие ошибку, возвращённую сервером Bitrix24
+- все исключения, возникающие в работе этого клиента
 
 ```php
 use Monolog\Formatter\LineFormatter;
@@ -690,12 +692,14 @@ All other errors result in exceptions.
 
 ## 5. Logging
 
-At the DEBUG logging level, all requests and responses from the Bitrix24 server will be logged.
+With the DEBUG logging level, the following will be recorded:
+- all requests sent to the Bitrix24 server and all responses received
+- any exceptions thrown by this client
 
-At the WARNING logging level, the logs will include:
-- when any key inside a Batch request receives an error from the Bitrix24 server
-- any error response from the Bitrix24 server
-- exceptions thrown by this client
+With the WARNING logging level, the following will be recorded:
+- the request and response if any key within a Batch request returns an error from the Bitrix24 server
+- all requests and responses that contain an error returned by the Bitrix24 server
+- any exceptions thrown by this client
 
 ```php
 use Monolog\Formatter\LineFormatter;
