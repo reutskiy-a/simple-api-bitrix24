@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace SimpleApiBitrix24\Tests\Integration\Services;
 
+use PHPUnit\Framework\Attributes\Test;
 use SimpleApiBitrix24\ApiClientBitrix24;
 use SimpleApiBitrix24\ApiClientSettings;
 use SimpleApiBitrix24\ApiDatabaseConfig;
@@ -13,7 +14,7 @@ use SimpleApiBitrix24\Services\Batch;
 use SimpleApiBitrix24\Services\BatchCollector;
 use SimpleApiBitrix24\Tests\BaseTestCase;
 
-class BatchTest extends BaseTestCase
+class BatchCollectorTest extends BaseTestCase
 {
     private Batch $batch;
 
@@ -34,21 +35,35 @@ class BatchTest extends BaseTestCase
         $this->batch = new Batch($api);
     }
 
-    public function test_batch_call_with_keys_ok(): void
-    {
-        $result = $this->batch->callWithKeys([
-            'scope_response' => ['method' => 'scope', 'params' => []],
-            'profile_response' => ['method' => 'profile', 'params' => []],
-        ]);
-
-        $this->assertTrue(key_exists('scope_response', $result));
-        $this->assertTrue(key_exists('profile_response', $result));
-    }
-
-    public function test_batch_service_method_returns_collector(): void
+    #[Test]
+    public function collector_works_correctly(): void
     {
         $collector = $this->batch->collector();
 
-        $this->assertTrue($collector instanceof BatchCollector);
+        $collector->add('profile');
+        $collector->add('app.info');
+        $collector->add('user.admin');
+
+        $result = $collector->execute();
+
+        $this->assertEquals(3, count($result));
+        $this->assertTrue($result[0]['ADMIN']);
+        $this->assertTrue($result[2]);
+        $this->assertEquals([], $collector->queries());
+    }
+
+    #[Test]
+    public function collector_works_correctly_with_150_queries(): void
+    {
+        $collector = $this->batch->collector();
+        $count = 150;
+
+        for($i = 0; $i < $count; $i++) {
+            $collector->add('user.admin');
+        }
+
+        $result = $collector->execute();
+
+        $this->assertEquals($count, count($result));
     }
 }
