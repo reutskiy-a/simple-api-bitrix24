@@ -391,6 +391,15 @@ $resultWithKeys = $batchService->callWithKeys([
     'scope_response' => ['method' => 'scope', 'params' => []],
     'deal_list_response' => ['method' => 'crm.deal.list', 'params' => ['select' => ['ID', 'TITLE']]],
 ])
+
+// BatchCollector — инструмент для накопления нескольких REST‑запросов в одном объекте
+// с последующим пакетным выполнением, что уменьшает количество обращений к API.
+// Можно добавлять более 50 запросов — сервис сам корректно разобьёт их на батчи.
+$batchCollector = $batchService->collector();
+$batchCollector->add('crm.deal.update', ['id' => 123, 'fields' => ['...']]);
+$batchCollector->add('crm.deal.update', ['id' => 124, 'fields' => ['...']]);
+$batchCollector->add('crm.lead.update', ['id' => 123, 'fields' => ['...']]);
+$collectorResult = $batchCollector->execute();
 ```
 
 
@@ -772,4 +781,13 @@ $resultWithKeys = $batchService->callWithKeys([
     'scope_response' => ['method' => 'scope', 'params' => []],
     'deal_list_response' => ['method' => 'crm.deal.list', 'params' => ['select' => ['ID', 'TITLE']]],
 ])
+
+// BatchCollector is a utility for collecting multiple REST requests into a single queue
+// and executing them as a batch, reducing the number of API calls.
+// It supports more than 50 queued requests — batching is handled automatically.
+$batchCollector = $batchService->collector();
+$batchCollector->add('crm.deal.update', ['id' => 123, 'fields' => ['...']]);
+$batchCollector->add('crm.deal.update', ['id' => 124, 'fields' => ['...']]);
+$batchCollector->add('crm.lead.update', ['id' => 123, 'fields' => ['...']]);
+$collectorResult = $batchCollector->execute();
 ```
