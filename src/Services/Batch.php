@@ -128,7 +128,7 @@ class Batch
      * NOTE: This method is designed to be universal but has not been tested with all possible Bitrix24 REST API methods.
      * Use it at your own risk.
      *
-     * Usage example:
+     * @example:
      * ```php
      * $queries[] = [
      *     'method' => 'catalog.product.list',
@@ -206,6 +206,26 @@ class Batch
         }
 
         return $result;
+    }
+
+    /**
+     * A utility that gathers multiple REST requests into a single object
+     * and performs them in one batch call, reducing the number of API requests.
+     *
+     * @return BatchCollector
+     *
+     * @example
+     * ```php
+     * $collector = $batchService->collector();
+     * $collector->add('crm.deal.update', ['id' => 123, ['...']);
+     * // ...
+     * $collector->add('crm.lead.update', ['id' => 123, ['...']);
+     * $collector->execute();
+     * ```
+     */
+    public function collector(): BatchCollector
+    {
+        return new BatchCollector($this);
     }
 }
 
