@@ -26,7 +26,7 @@ class InstallationService
         string $domain
     ): User {
         return self::createUserFromProfileAndSave(
-            ApiDatabaseConfig: $this->apiDatabaseConfig,
+            apiDatabaseConfig: $this->apiDatabaseConfig,
             clientId: $clientId,
             clientSecret: $clientSecret,
             memberId: $memberId,

@@ -4,34 +4,41 @@ declare(strict_types=1);
 
 namespace SimpleApiBitrix24\Services;
 
+use SimpleApiBitrix24\DTOs\BatchItem;
+
 class BatchCollector
 {
-    private array $queries = [];
+    private array $items = [];
 
     public function __construct(
         private Batch $batch
     ) {}
 
-    public function add(string $method, array $params = []): self
+    public function add(BatchItem $batchItem): self
     {
-        $this->queries[] = [
-            'method' => $method,
-            'params' => $params,
-        ];
+        $this->items[] = $batchItem;
 
         return $this;
     }
 
-    public function queries(): array
+    public function items(): array
     {
-        return $this->queries;
+        return $this->items;
     }
 
     public function execute(): array
     {
-        $result = $this->batch->call($this->queries);
+        $queries = [];
+        /** @var BatchItem $item */
+        foreach ($this->items as $item) {
+            $queries[] = [
+                'method' => $item->method,
+                'params' => $item->params,
+            ];
+        }
 
-        $this->queries = [];
+        $result = $this->batch->call($queries);
+        $this->items = [];
 
         return $result;
     }

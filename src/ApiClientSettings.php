@@ -10,6 +10,7 @@ use SimpleApiBitrix24\Connectors\Handlers\QueryLimitExceededHandler;
 use SimpleApiBitrix24\Connectors\Models\Webhook;
 use SimpleApiBitrix24\DatabaseCore\Models\User;
 use SimpleApiBitrix24\Enums\AuthType;
+use SimpleApiBitrix24\Enums\Rest;
 
 class ApiClientSettings
 {
@@ -18,6 +19,7 @@ class ApiClientSettings
     private Webhook|User|null $defaultCredentials = null;
     private ?QueryLimitExceededHandler $queryLimitExceededHandler = null;
     private ?OperationTimeLimitHandler $operationTimeLimitHandler = null;
+    private Rest $restVersion = Rest::VER_2;
 
     public function __construct(AuthType $authType)
     {
@@ -44,6 +46,12 @@ class ApiClientSettings
         int $usleep = OperationTimeLimitHandler::USLEEP_DEFAULT
     ): ApiClientSettings {
         $this->operationTimeLimitHandler = new OperationTimeLimitHandler($handleEnabled, $usleep);
+        return $this;
+    }
+
+    public function setRestVersion(Rest $restVersion): ApiClientSettings
+    {
+        $this->restVersion = $restVersion;
         return $this;
     }
 
@@ -82,5 +90,10 @@ class ApiClientSettings
         }
 
         return $this->operationTimeLimitHandler;
+    }
+
+    public function getRestVersion(): Rest
+    {
+        return $this->restVersion;
     }
 }

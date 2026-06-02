@@ -11,7 +11,6 @@ use SimpleApiBitrix24\ApiDatabaseConfig;
 use SimpleApiBitrix24\DatabaseCore\UserRepository;
 use SimpleApiBitrix24\Enums\AuthType;
 use SimpleApiBitrix24\Services\Batch;
-use SimpleApiBitrix24\Services\BatchCollector;
 use SimpleApiBitrix24\Tests\BaseTestCase;
 
 class BatchCollectorTest extends BaseTestCase

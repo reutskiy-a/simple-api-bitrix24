@@ -9,8 +9,10 @@ use SimpleApiBitrix24\Connectors\ConnectorFactory;
 use SimpleApiBitrix24\Connectors\Interfaces\ConnectorInterface;
 use SimpleApiBitrix24\Connectors\Models\Webhook;
 use SimpleApiBitrix24\DatabaseCore\Models\User;
+use SimpleApiBitrix24\Enums\Rest;
 use SimpleApiBitrix24\Exceptions\ConnectorException;
 use SimpleApiBitrix24\Managers\LogManager;
+use SimpleApiBitrix24\Managers\Rest2Manager;
 use SimpleApiBitrix24\Managers\ServiceManager;
 use Throwable;
 
@@ -21,6 +23,7 @@ class ApiClientBitrix24
     private LogManager $logManager;
     private ConnectorInterface $connector;
     private ?ServiceManager $serviceManager = null;
+    private ?Rest2Manager $rest2Manager = null;
 
     public function __construct(
         ApiClientSettings $apiSettings,
@@ -111,13 +114,35 @@ class ApiClientBitrix24
         return get_class($this->connector);
     }
 
+    public function setRestVersion(Rest $restVersion): ApiClientBitrix24
+    {
+        $this->apiSettings->setRestVersion($restVersion);
+        return $this;
+    }
+
+    public function getRestVersion(): Rest
+    {
+        return $this->apiSettings->getRestVersion();
+    }
+
     public function __clone()
     {
         $this->apiSettings = clone $this->apiSettings;
     }
 
+    /**
+     * @return ServiceManager
+     */
     public function services(): ServiceManager
     {
         return $this->serviceManager ??= new ServiceManager($this, $this->apiDatabaseConfig);
+    }
+
+    /**
+     * @return Rest2Manager
+     */
+    public function rest2(): Rest2Manager
+    {
+        return $this->rest2Manager ??= new Rest2Manager($this);
     }
 }

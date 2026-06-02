@@ -7,13 +7,15 @@ namespace SimpleApiBitrix24\Managers;
 use SimpleApiBitrix24\ApiClientBitrix24;
 use SimpleApiBitrix24\ApiDatabaseConfig;
 use SimpleApiBitrix24\Services\Batch;
+use SimpleApiBitrix24\Services\Crm\Company;
 use SimpleApiBitrix24\Services\Installation\InstallationService;
 
 class ServiceManager
 {
     private ?Batch $batch = null;
-
     private ?InstallationService $installationService = null;
+    private ?Company $company = null;
+
 
     public function __construct(
         private ApiClientBitrix24 $api,
@@ -32,5 +34,9 @@ class ServiceManager
         return $this->installationService ??= new InstallationService($this->apiDatabaseConfig);
     }
 
+    public function company(): Company
+    {
+        return $this->company ??= new Company($this->api);
+    }
 
 }
