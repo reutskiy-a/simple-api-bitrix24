@@ -11,6 +11,7 @@ use SimpleApiBitrix24\Connectors\Models\Webhook;
 use SimpleApiBitrix24\DatabaseCore\Models\User;
 use SimpleApiBitrix24\Exceptions\ConnectorException;
 use SimpleApiBitrix24\Managers\LogManager;
+use SimpleApiBitrix24\Managers\ServiceManager;
 use Throwable;
 
 class ApiClientBitrix24
@@ -19,6 +20,7 @@ class ApiClientBitrix24
     private ?ApiDatabaseConfig $apiDatabaseConfig;
     private LogManager $logManager;
     private ConnectorInterface $connector;
+    private ?ServiceManager $serviceManager = null;
 
     public function __construct(
         ApiClientSettings $apiSettings,
@@ -31,6 +33,14 @@ class ApiClientBitrix24
         $this->connector = ConnectorFactory::create($apiSettings, $apiDatabaseConfig);
     }
 
+    public function __clone()
+    {
+        $this->apiSettings = clone $this->apiSettings;
+    }
+
+    /**
+     * @return Webhook|User|null
+     */
     public function getCredentials(): Webhook|User|null
     {
         return $this->apiSettings->getDefaultCredentials();
@@ -109,8 +119,11 @@ class ApiClientBitrix24
         return get_class($this->connector);
     }
 
-    public function __clone()
+    /**
+     * @return ServiceManager
+     */
+    public function services(): ServiceManager
     {
-        $this->apiSettings = clone $this->apiSettings;
+        return $this->serviceManager ??= new ServiceManager($this, $this->apiDatabaseConfig);
     }
 }

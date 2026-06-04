@@ -10,6 +10,37 @@ use SimpleApiBitrix24\DatabaseCore\UserRepository;
 
 class InstallationService
 {
+    private ApiDatabaseConfig $apiDatabaseConfig;
+
+    public function __construct(ApiDatabaseConfig $apiDatabaseConfig)
+    {
+        $this->apiDatabaseConfig = $apiDatabaseConfig;
+    }
+
+    public function saveUser(
+        string $clientId,
+        string $clientSecret,
+        string $memberId,
+        string $authToken,
+        string $refreshToken,
+        string $domain
+    ): User {
+        return self::createUserFromProfileAndSave(
+            apiDatabaseConfig: $this->apiDatabaseConfig,
+            clientId: $clientId,
+            clientSecret: $clientSecret,
+            memberId: $memberId,
+            authToken: $authToken,
+            refreshToken: $refreshToken,
+            domain: $domain
+        );
+    }
+
+    public function finish(): void
+    {
+        self::finishInstallation();
+    }
+
     public static function createUserFromProfileAndSave(
         ApiDatabaseConfig $apiDatabaseConfig,
         string $clientId,

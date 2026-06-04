@@ -217,9 +217,8 @@ class Batch
      * @example
      * ```php
      * $collector = $batchService->collector();
-     * $collector->add('crm.deal.update', ['id' => 123, ['...']);
-     * // ...
-     * $collector->add('crm.lead.update', ['id' => 123, ['...']);
+     * $collector->add('crm.deal.update', ['id' => 123, ['...']]);
+     * $collector->add('crm.lead.update', ['id' => 123, ['...']]);
      * $collector->execute();
      * ```
      */
