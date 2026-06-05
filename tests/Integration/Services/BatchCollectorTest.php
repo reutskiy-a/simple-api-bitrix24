@@ -9,6 +9,7 @@ use SimpleApiBitrix24\ApiClientBitrix24;
 use SimpleApiBitrix24\ApiClientSettings;
 use SimpleApiBitrix24\ApiDatabaseConfig;
 use SimpleApiBitrix24\DatabaseCore\UserRepository;
+use SimpleApiBitrix24\DTOs\BatchItem;
 use SimpleApiBitrix24\Enums\AuthType;
 use SimpleApiBitrix24\Services\Batch;
 use SimpleApiBitrix24\Services\BatchCollector;
@@ -16,7 +17,7 @@ use SimpleApiBitrix24\Tests\BaseTestCase;
 
 class BatchCollectorTest extends BaseTestCase
 {
-    private Batch $batch;
+    private ApiClientBitrix24 $api;
 
     public function setUp(): void
     {
@@ -31,14 +32,13 @@ class BatchCollectorTest extends BaseTestCase
         $repository = new UserRepository($dbSettings);
         $user = $repository->getFirstAdminByMemberId($_ENV['MEMBER_ID']);
         $api->setCredentials($user);
-
-        $this->batch = new Batch($api);
+        $this->api = $api;
     }
 
     #[Test]
     public function collector_works_correctly(): void
     {
-        $collector = $this->batch->collector();
+        $collector = $this->api->services()->batch()->collector();
 
         $collector->add('profile');
         $collector->add('app.info');
@@ -49,13 +49,13 @@ class BatchCollectorTest extends BaseTestCase
         $this->assertEquals(3, count($result));
         $this->assertTrue($result[0]['ADMIN']);
         $this->assertTrue($result[2]);
-        $this->assertEquals([], $collector->queries());
+        $this->assertEquals([], $collector->items());
     }
 
     #[Test]
     public function collector_works_correctly_with_150_queries(): void
     {
-        $collector = $this->batch->collector();
+        $collector = $this->api->services()->batch()->collector();
         $count = 150;
 
         for($i = 0; $i < $count; $i++) {
@@ -65,5 +65,22 @@ class BatchCollectorTest extends BaseTestCase
         $result = $collector->execute();
 
         $this->assertEquals($count, count($result));
+    }
+
+    #[Test]
+    public function collector_works_correctly_with_dto(): void
+    {
+        $collector = $this->api->services()->batch()->collector();
+
+        $collector->addByDto(new BatchItem('profile'));
+        $collector->addByDto(new BatchItem('app.info'));
+        $collector->addByDto(new BatchItem('user.admin'));
+
+        $result = $collector->execute();
+
+        $this->assertEquals(3, count($result));
+        $this->assertTrue($result[0]['ADMIN']);
+        $this->assertTrue($result[2]);
+        $this->assertEquals([], $collector->items());
     }
 }
